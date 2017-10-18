@@ -7,12 +7,11 @@ Created on Mon Oct 16 11:24:06 2017
 
 
 # text:Array of lines of the text
-def build_bigram_database(text):
+def build_bigram_db(text):
     db = {} # Dictionary bigram -> number of occurrences
     for line in text:
         line_bigrams = count_bigrams(line)
-        update_db(db, line_bigrams) # TODO: Python passes dictionaries by value or by reference?
-        #TODO # Update the db with the bigrams
+        update_bigram_db(db, line_bigrams)
     return db
     #TODO # Save the db to a file for further use
 
@@ -30,11 +29,11 @@ def count_bigrams(line, sep = ""):
     #elif len(line) == 1:
     #    pass # TODO?
     return bigram_dict
-    
+
 # Updates the bigram database with the information from a line of text
-def update_db(db, line_bigrams):
-    for key in line_bigrams.keys():
-        update = line_bigrams[key]
+def update_bigram_db(db, line_bigrams):
+    for key, update in line_bigrams.items():
+#        update = line_bigrams[key]
         current = db.get(key, 0)
         db[key] = current + update
     return db
