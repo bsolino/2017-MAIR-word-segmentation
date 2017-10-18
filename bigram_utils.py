@@ -6,13 +6,14 @@ Created on Mon Oct 16 11:24:06 2017
 """
 
 
-# text:Array of lines of the text
-def build_bigram_db(text):
-    db = {} # Dictionary bigram -> number of occurrences
+# text: Array of lines of the text
+# @returns bigrams: Dictionary bigram -> number of occurrences
+def find_bigrams(text):
+    bigrams = {}
     for line in text:
         line_bigrams = count_bigrams(line)
-        update_bigram_db(db, line_bigrams)
-    return db
+        update_bigrams(bigrams, line_bigrams)
+    return bigrams
     #TODO # Save the db to a file for further use
 
 # Count bigrams in the line, return dictionary bigram -> number of occurrences
@@ -31,9 +32,9 @@ def count_bigrams(line, sep = ""):
     return bigram_dict
 
 # Updates the bigram database with the information from a line of text
-def update_bigram_db(db, line_bigrams):
+def update_bigrams(bigrams, line_bigrams):
     for key, update in line_bigrams.items():
 #        update = line_bigrams[key]
-        current = db.get(key, 0)
-        db[key] = current + update
-    return db
+        current = bigrams.get(key, 0)
+        bigrams[key] = current + update
+    return bigrams
