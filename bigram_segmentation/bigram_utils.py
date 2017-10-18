@@ -17,19 +17,29 @@ def find_bigrams(text):
     #TODO # Save the db to a file for further use
 
 # Count bigrams in the line, return dictionary bigram -> number of occurrences
-def count_bigrams(line, sep = ""):
-    # TODO Adapt this to other kinds of bigrams
+def count_bigrams(line):
+    #TODO Refactor to a) separate in bigrams, b) count them
     bigram_dict = {}
+    bigram_line = line_2_bigrams(line)
+    for bigram in bigram_line:
+        bigram_dict[bigram] = bigram_dict.get(bigram, 0) +1
+    return bigram_dict
+
+# Converts a line in a list of bigrams
+def line_2_bigrams(line):
+    # TODO Adapt this to other kinds of bigrams
     if len(line) >= 2:
+        bigram_list = []
         old_c = None
         for c in line:
             if old_c != None:
                 bigram = old_c + c
-                bigram_dict[bigram] = bigram_dict.get(bigram, 0) +1
+                bigram_list.append(bigram)
             old_c = c
-    #elif len(line) == 1:
-    #    pass # TODO?
-    return bigram_dict
+        return bigram_list
+    else:
+        return [] #This is not a bigram
+    
 
 # Updates the bigram database with the information from a line of text
 def update_bigrams(bigrams, line_bigrams):
