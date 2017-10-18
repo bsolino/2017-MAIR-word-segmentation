@@ -9,5 +9,5 @@ def load_file(route):
     with open(route) as f:
         text = []
         for line in f:
-            text.append(line.strip())
+            text.append(line)
     return text

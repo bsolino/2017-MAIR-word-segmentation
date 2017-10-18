@@ -11,6 +11,7 @@ Created on Mon Oct 16 11:24:06 2017
 def find_bigrams(text):
     bigrams = {}
     for line in text:
+        line = clean_line(line)
         line_bigrams = count_bigrams(line)
         update_bigrams(bigrams, line_bigrams)
     return bigrams
@@ -18,7 +19,6 @@ def find_bigrams(text):
 
 # Count bigrams in the line, return dictionary bigram -> number of occurrences
 def count_bigrams(line):
-    #TODO Refactor to a) separate in bigrams, b) count them
     bigram_dict = {}
     bigram_line = line_2_bigrams(line)
     for bigram in bigram_line:
@@ -39,12 +39,29 @@ def line_2_bigrams(line):
         return bigram_list
     else:
         return [] #This is not a bigram
-    
+
+def split_bigram(bigram):
+    #TODO Adapt this to other kinds of bigrams
+    return bigram[0], bigram[1]
 
 # Updates the bigram database with the information from a line of text
 def update_bigrams(bigrams, line_bigrams):
     for key, update in line_bigrams.items():
-#        update = line_bigrams[key]
         current = bigrams.get(key, 0)
         bigrams[key] = current + update
     return bigrams
+
+# Calculates the percentage of occurrences of each bigram
+def calculate_statistics(bigrams):
+    total = sum(bigrams.values())
+    statistics = {}
+    for key, value in bigrams.items():
+        statistics[key] = value/total
+    return statistics
+
+# Removes trailing whitespaces and separators
+def clean_line(line):
+    clean = line.strip()
+    # Adapt this to other kind of separators
+    clean = clean.replace(" ", "")
+    return clean

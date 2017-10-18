@@ -4,25 +4,42 @@ Created on Wed Oct 18 12:00:53 2017
 
 @author: Breixo
 """
+from bigram_utils import line_2_bigrams, split_bigram
 
-# Calculates the percentage of occurrences of each bigram
-def calculate_statistics(bigrams):
-    total = sum(bigrams.values())
-    statistics = {}
-    for key, value in bigrams.items():
-        statistics[key] = value/total
-    return statistics
-
-def segment_line(bigram_stats, line):
-    #TODO This also reads the line in bigrams, refactor again?
+def segment_line(bigrams_stats, line):
     #TODO Extend to other bigram types
-    if len(line) >= 2:
-        old_c = None
-        for c in line:
-            if old_c != None:
-                bigram = old_c + c
-                bigram_dict[bigram] = bigram_dict.get(bigram, 0) +1
-            old_c = c
-        return bigram_dict
+    bigram_line = line_2_bigrams(line)
+    n_bigrams = len(bigram_line)
+    if n_bigrams >= 3:
+        segmented_line = []
+        current_item = bigram_line[0]
+        for i in range(1, n_bigrams- 1):
+            # TODO? Optimize
+            # TODO Refactor variable names
+            previous_bigram = bigram_line[i-1]
+            current_bigram = bigram_line[i]
+            next_bigram = bigram_line[i+1]
+            
+            # TODO Other default probability?
+            prob_previous = bigrams_stats.get(previous_bigram, 0)
+            prob_current = bigrams_stats.get(current_bigram, 0)
+            prob_next = bigrams_stats.get(next_bigram, 0)
+            
+            second_part = split_bigram(current_bigram)[1]
+            
+            if prob_current < prob_previous and prob_current < prob_next:
+                # Split the bigram in two and create a new item
+                segmented_line.append(current_item)
+                current_item = second_part
+            else:
+                current_item = current_item + second_part
+            
+            if i == n_bigrams-2:
+                # Last item
+                second_part = split_bigram(next_bigram)[1]
+                current_item = current_item + second_part
+                segmented_line.append(current_item)
+        return segmented_line
     else:
-        return line
+        # This method can't segment with less than 3 bigrams
+        return [line]
