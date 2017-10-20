@@ -24,7 +24,7 @@ def InitialSplitWordOnSyllable(word):
     for i in range(2, len(vowelPositions) + 1):
         outputWord = outputWord[0:vowelPositions[-i] + 2] + " " + outputWord[vowelPositions[-i] + 2:]
 
-    return outputWord#fjgskjdk
+    return outputWord#fjgskjdkjgjh
 
 # illegal letter combinations (pm, lf, lm)
 def fixIllegalCombinationsSyllable(input, firstLetter, secondLetter):
