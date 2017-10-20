@@ -10,6 +10,8 @@ stops = ["p", "b", "t", "d", "k", "g"]
 fricatives = ["f", "v", "s", "z", "x", "G", "h", "S"]
 diphthongs = ["K", "L", "M"]
 
+illegalCombinations = ["pm", "pf", "mk", "tm", "tp", "tk"]
+
 def InitialSplitWordOnSyllable(word):
     wordLength = len(word)
     vowelPositions = []
@@ -39,7 +41,7 @@ def fixSingleConsonant(input):
     for i in range(len(syllables)):
         if syllables[i][0] in vowels:
             if i - 1 < 0:
-                break
+                continue
             if not syllables[i - 1][-1] in vowels:
                 syllables[i] = syllables[i - 1][-1] + syllables[i]
                 syllables[i - 1] = syllables[i - 1][0:-1]
@@ -51,9 +53,12 @@ def fixSingleConsonant(input):
 def fixDoubleVowels(input):
     syllables = input.split()
     for i in range(len(syllables)):
-        if syllables[i][-2] in vowels and syllables[i][-1] in vowels:
-            syllables[i + 1] = syllables[i][-1] + syllables[i + 1]
-            syllables[i] = syllables[i][0:-1]
+        if len(syllables[i]) >= 2:
+            if syllables[i][-2] in vowels and syllables[i][-1] in vowels:
+                if i + 1 == len(syllables):
+                    syllables.append('')
+                syllables[i + 1] = syllables[i][-1] + syllables[i + 1]
+                syllables[i] = syllables[i][0:-1]
 
     return " ".join(syllables)
 
@@ -138,9 +143,21 @@ def splitOnSyllables(input):
     output = []
     words = input.split(" ")
     for word in words:
-        output.append(InitialSplitWordOnSyllable(word))
+        splittedWord = InitialSplitWordOnSyllable(word)
+        splittedWord = fixSonorantConsonants(splittedWord)
+        splittedWord = fixDoubleVowels(splittedWord)
+        splittedWord = fixSingleConsonant(splittedWord)
 
-    return "".join(output)
+        for letters in illegalCombinations:
+            splittedWord = fixIllegalCombinationsSyllable(splittedWord, letters[0], letters[1])
+
+        output.append(splittedWord)
+
+    return " ".join(output)
+
+def prettyPrint(input):
+    for i in range(len(input)):
+        print str(i + 1) + ": " + input[i]
 
 def createOutputFile(output):
     currentDatetime = datetime.datetime.now()
@@ -150,15 +167,14 @@ def createOutputFile(output):
             f.write(line + "\n")
 
 if __name__ == "__main__":
-    #lines = []
-    #with open("corpus.txt", "r+") as f:
-    #    lines.append(f.readline())
+    lines = []
+    with open("corpus/manually_syllabified_corpus.txt", "r+") as f:
+        lines = f.readlines()
+    lines = [line.strip() for line in lines]
 
-    #output = []
-    #for i in range(len(lines)):
-    #    output.append(splitOnSyllables(lines[i]))
+    output = []
+    for i in range(len(lines)):
+        output.append(splitOnSyllables(lines[i]))
 
     #createOutputFile(output)
-    #print output
-
-    print fixSingleConsonant(InitialSplitWordOnSyllable("papa"))
+    prettyPrint(output)
