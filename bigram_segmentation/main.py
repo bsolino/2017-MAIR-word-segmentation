@@ -36,7 +36,7 @@ def compare_lines(original_line, test_line):
                 j -= 1 # Compensate the lack of space
             else:
                 true_negatives += 1
-            
+#        print(char_o + " == " + char_t + " ? " + str(char_o == char_t)) #TODO REMOVE
     
     return true_positives, true_negatives, false_positives, false_negatives
 
@@ -51,30 +51,54 @@ def test1():
         print(line.split(" "))
         print(segment_line(bigram_probabilities, clean_line(line2)))
     
+def print_test_rates(comparison):
+    tp = comparison[0]
+    tn = comparison[1]
+    fp = comparison[2]
+    fn = comparison[3]
+    
+    print("True positive rate (sensitivity): " + str(tp / (tp + fn)))
+    print("False positive rate:              " + str(fp / (fp + fn)))
+    print("True negative rate (specificity): " + str(tn / (fp + tn)))
+    
 def test2():
     route = "../corpus/CGN-NL-50k-utt.txt"
     text = load_file(route)
 
-    divided_data = divide_data(text)
-#     for i in range(divided_data):
-#    training_data, test_data = prepare_training_test_data(divided_data, i)
-    training_data, test_data = prepare_training_test_data(divided_data, 0)
-    bigram_probabilities = bigram_probabilities_from_data(training_data)
-    for line in test_data:
-        line = line.strip()
-        segmented_line = segment_line(bigram_probabilities, clean_line(line))
-        result_line = ""
-        is_first_word = True
-        for word in segmented_line:
-            if not is_first_word:
-                result_line += " "
-            else:
-                is_first_word = False
-            result_line += word
-        compare_lines(line, result_line)
-        print(line)
-        print(result_line)
+    full_comparison = [0, 0, 0, 0]
 
-        
+    divided_data = divide_data(text, False)
+    for i in range(len(divided_data)):
+        training_data, test_data = prepare_training_test_data(divided_data, i)
+    #    training_data, test_data = prepare_training_test_data(divided_data, 0)
+        bigram_probabilities = bigram_probabilities_from_data(training_data)
+        test_comparison = [0, 0, 0, 0]
+        for line in test_data:
+            line = line.strip()
+            if len(line) < 3:
+                continue
+            segmented_line = segment_line(bigram_probabilities, clean_line(line))
+            result_line = ""
+            is_first_word = True
+            for word in segmented_line:
+                if not is_first_word:
+                    result_line += " "
+                else:
+                    is_first_word = False
+                result_line += word
+#            print(line)
+            #print(result_line)
+            line_comparison = compare_lines(line, result_line)
+#            print(line_comparison)
+            for i_comparison in range(len(line_comparison)):
+                test_comparison[i_comparison] += line_comparison[i_comparison]
+        print("\nTEST " + str(i+1))
+        print(test_comparison)
+        print_test_rates(test_comparison)
+        for i_comparison in range(len(test_comparison)):
+            full_comparison[i_comparison] += test_comparison[i_comparison]
+    print ("\nFULL TEST")
+    print (full_comparison)
+    print_test_rates(full_comparison)
 # test1()
-# test2()
+test2()
