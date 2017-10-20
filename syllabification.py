@@ -166,6 +166,10 @@ def createOutputFile(output):
         for line in output:
             f.write(line + "\n")
 
+def compareResults(input, correctSource):
+    with open(correctSource, "r+") as f:
+        return #TODO find a way to compute hit rates etc.
+
 if __name__ == "__main__":
     lines = []
     with open("corpus/manually_syllabified_corpus.txt", "r+") as f:
@@ -175,6 +179,8 @@ if __name__ == "__main__":
     output = []
     for i in range(len(lines)):
         output.append(splitOnSyllables(lines[i]))
+
+    #compareResults(output, "corpus/DSWC-Syllabified.txt")
 
     #createOutputFile(output)
     prettyPrint(output)
