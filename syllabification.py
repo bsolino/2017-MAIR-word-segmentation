@@ -34,6 +34,20 @@ def fixIllegalCombinationsSyllable(input, firstLetter, secondLetter):
 
     return " ".join(syllables)
 
+def fixSingleConsonant(input):
+    syllables = input.split()
+    for i in range(len(syllables)):
+        if syllables[i][0] in vowels:
+            if i - 1 < 0:
+                break
+            if not syllables[i - 1][-1] in vowels:
+                syllables[i] = syllables[i - 1][-1] + syllables[i]
+                syllables[i - 1] = syllables[i - 1][0:-1]
+
+    return " ".join(syllables)
+
+
+# fixes two vowels in a row
 def fixDoubleVowels(input):
     syllables = input.split()
     for i in range(len(syllables)):
@@ -43,34 +57,69 @@ def fixDoubleVowels(input):
 
     return " ".join(syllables)
 
-def fixSonorantConsonents(input):
+# This function makes sure that the onset and the code are ranked correctly by sonorancy
+def fixSonorantConsonants(input): # input is a word initially split into syllables
     syllables = input.split()
-    for i in range(len(syllables)):
+    i = 0
+    while i < len(syllables):
         for char in range(len(syllables[i])):
+            # search for the vowel in the syllable
             if syllables[i][char] in vowels:
                 leftLowestRank = 0
                 rightLowestRank = 0
-                rightChange = False
-                for leftI in range(0, char)[:-1]:
+                change = False
+                for leftI in range(0, char)[::-1]:
+                    # 's' is a special character that can be at the beginning of a word without acting as a part of the onset
+                    if syllables[i][leftI] == 's':
+                        continue
                     rank = getSonorant(syllables[i][leftI])
                     if rank > leftLowestRank:
                         leftLowestRank = rank
                         continue
-                    syllables[i - 1] = syllables[i - 1] + syllables[i][0:leftI]
-                    syllables[i] = syllables[i][leftI:]
+                    # If the first character need to move to the left, then an extra syllable is created at the beginning
+                    if i  == 0:
+                        syllables = [''] + syllables
+                        i += 1
+                    # All characters that have lower rank than some character closer to the vowel are moved to the previous syllable
+                    syllables[i - 1] = syllables[i - 1] + syllables[i][0:leftI + 1]
+                    syllables[i] = syllables[i][leftI + 1:]
+                    change = True
                     break
 
                 for rightI in range(char + 1, len(syllables[i])):
                     rank = getSonorant(syllables[i][rightI])
-                    if rank > rightLowestRank:
+                    if rank >= rightLowestRank:
                         rightLowestRank = rank
                         continue
+                    if i + 1 == len(syllables):
+                        syllables.append('')
                     syllables[i + 1] = syllables[i][rightI:] + syllables[i + 1]
                     syllables[i] = syllables[i][0:rightI]
-                    rightChange = True
+                    change = True
                     break
 
-                if rightChange:
+                if change:
+                    break
+        i += 1
+
+    return " ".join(syllables)
+
+def removeHFromCoda(input):
+    syllables = input.split()
+    for i in range(len(syllables)):
+        for char in range(len(syllables[i])):
+            # search for the vowel in the syllable
+            change = False
+            if syllables[i][char] in vowels:
+                for rightI in range(char + 1, len(syllables[i])):
+                    if syllables[i][rightI] == 'h':
+                        if i + 1 == len(syllables):
+                            syllables.append('')
+                        syllables[i + 1] = syllables[i][rightI:] + syllables[i + 1]
+                        syllables[i] = syllables[i][0:rightI]
+                        change = True
+                        break
+                if change:
                     break
 
     return " ".join(syllables)
@@ -112,4 +161,4 @@ if __name__ == "__main__":
     #createOutputFile(output)
     #print output
 
-    print fixSonorantConsonents(InitialSplitWordOnSyllable("meklmekl"))
+    print fixSingleConsonant(InitialSplitWordOnSyllable("papa"))
