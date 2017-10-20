@@ -46,5 +46,5 @@ def prepare_training_test_data(divided_data, i_test):
     training_data = []
     for i in range(len(divided_data)):
         if i != i_test:
-            training_data += divided_data[i_test]
+            training_data += divided_data[i]
     return training_data, test_data
