@@ -59,6 +59,10 @@ def calculate_statistics(bigrams):
         statistics[key] = value/total
     return statistics
 
+def bigram_probabilities_from_data(data):
+    bigram_appearances = find_bigrams(data)
+    return calculate_statistics(bigram_appearances)
+
 # Removes trailing whitespaces and separators
 def clean_line(line):
     clean = line.strip()
