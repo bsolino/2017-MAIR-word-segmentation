@@ -12,7 +12,10 @@ diphthongs = ["K", "L", "M"]
 
 illegalCombinations = ["pm", "pf", "mk", "tm", "tp", "tk"]
 
+# This function splits a word into syllables in the following way: It always splits the consonants between two vowels. The first consonant after the first vowel belongs to the first syllable, all other consonants (if any) belong to the second syllable. For example  "rusten" becomes "rus-ten" and "papapa" becomes "pap-ap-a" 
+
 def InitialSplitWordOnSyllable(word):
+	# We first determine the locations of the vowels
     wordLength = len(word)
     vowelPositions = []
     for i in range(wordLength):
@@ -21,24 +24,28 @@ def InitialSplitWordOnSyllable(word):
             vowelPositions.append(i)
 
     outputWord = word
+	# We keep splitting between two vowels until every syllable contains just one vowel
     for i in range(2, len(vowelPositions) + 1):
         outputWord = outputWord[0:vowelPositions[-i] + 2] + " " + outputWord[vowelPositions[-i] + 2:]
 
-    return outputWord#fjgskjdkjgjh
+    return outputWord
 
-# illegal letter combinations (pm, lf, lm)
-def fixIllegalCombinationsSyllable(input, firstLetter, secondLetter):
+# illegal letter combinations (pm, lf, lm, ...)
+# If a syllable starts with a illegal letter combination, the first letter is moved to the previous syllable
+def fixIllegalCombinationsSyllable(input, firstLetter, secondLetter): # input is a word that is already devided into syllables (but syllabification may be wrong)
     syllables = input.split()
     for i in range(len(syllables)):
         if firstLetter + secondLetter in syllables[i]:
             syllables[i - 1] += firstLetter
             syllables[i] = syllables[i][1:]
 
-    return " ".join(syllables)
+    return "".join(syllables)
 
+# Our initial split function always splits after a vowel+consonant, while if there's only one consonant between two vowels, that consonant should belong to the second syllable. This function fixes that.
 def fixSingleConsonant(input):
     syllables = input.split()
     for i in range(len(syllables)):
+		# If the first letter of a syllable is a vowel and the last letter of the previous syllable is a consonant, we move the consonant
         if syllables[i][0] in vowels:
             if i - 1 < 0:
                 continue
@@ -54,8 +61,9 @@ def fixDoubleVowels(input):
     syllables = input.split()
     for i in range(len(syllables)):
         if len(syllables[i]) >= 2:
+			# if the two last letters in a syllable are both vowels, the second vowel moves to the next syllable
             if syllables[i][-2] in vowels and syllables[i][-1] in vowels:
-                if i + 1 == len(syllables):
+                if i + 1 == len(syllables): # an extra empty syllable is created when needed
                     syllables.append('')
                 syllables[i + 1] = syllables[i][-1] + syllables[i + 1]
                 syllables[i] = syllables[i][0:-1]
@@ -96,8 +104,10 @@ def fixSonorantConsonants(input): # input is a word initially split into syllabl
                     if rank >= rightLowestRank:
                         rightLowestRank = rank
                         continue
+					# If the last character need to move to the right, then an extra syllable is created at the end
                     if i + 1 == len(syllables):
                         syllables.append('')
+					# All characters that have lower rank than some character closer to the vowel are moved to the next syllable
                     syllables[i + 1] = syllables[i][rightI:] + syllables[i + 1]
                     syllables[i] = syllables[i][0:rightI]
                     change = True
@@ -109,14 +119,16 @@ def fixSonorantConsonants(input): # input is a word initially split into syllabl
 
     return " ".join(syllables)
 
+# In Dutch, the letter "h" can never be at the coda. This function fixes that.
 def removeHFromCoda(input):
     syllables = input.split()
     for i in range(len(syllables)):
         for char in range(len(syllables[i])):
-            # search for the vowel in the syllable
             change = False
+			# search for the vowel in the syllable to find the coda (to the right of the vowel)
             if syllables[i][char] in vowels:
                 for rightI in range(char + 1, len(syllables[i])):
+					# search for an "h" in the coda and move it to next syllable
                     if syllables[i][rightI] == 'h':
                         if i + 1 == len(syllables):
                             syllables.append('')
@@ -139,6 +151,7 @@ def getSonorant(input):
     if input in stops or input in fricatives:
         return 4
 
+# In this function, we combine the InitialSplitWordOnSyllable function together with all other functions to fix errors in the initial split.
 def splitOnSyllables(input):
     output = []
     words = input.split(" ")
