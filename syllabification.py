@@ -26,24 +26,24 @@ def InitialSplitWordOnSyllable(word):
     outputWord = word
 	# We keep splitting between two vowels until every syllable contains just one vowel
     for i in range(2, len(vowelPositions) + 1):
-        outputWord = outputWord[0:vowelPositions[-i] + 2] + " " + outputWord[vowelPositions[-i] + 2:]
+        outputWord = outputWord[0:vowelPositions[-i] + 2] + "-" + outputWord[vowelPositions[-i] + 2:]
 
     return outputWord
 
 # illegal letter combinations (pm, lf, lm, ...)
 # If a syllable starts with a illegal letter combination, the first letter is moved to the previous syllable
 def fixIllegalCombinationsSyllable(input, firstLetter, secondLetter): # input is a word that is already devided into syllables (but syllabification may be wrong)
-    syllables = input.split()
+    syllables = input.split('-')
     for i in range(len(syllables)):
         if firstLetter + secondLetter in syllables[i]:
             syllables[i - 1] += firstLetter
             syllables[i] = syllables[i][1:]
 
-    return "".join(syllables)
+    return "-".join(syllables)
 
 # Our initial split function always splits after a vowel+consonant, while if there's only one consonant between two vowels, that consonant should belong to the second syllable. This function fixes that.
 def fixSingleConsonant(input):
-    syllables = input.split()
+    syllables = input.split('-')
     for i in range(len(syllables)):
 		# If the first letter of a syllable is a vowel and the last letter of the previous syllable is a consonant, we move the consonant
         if syllables[i][0] in vowels:
@@ -53,12 +53,12 @@ def fixSingleConsonant(input):
                 syllables[i] = syllables[i - 1][-1] + syllables[i]
                 syllables[i - 1] = syllables[i - 1][0:-1]
 
-    return " ".join(syllables)
+    return "-".join(syllables)
 
 
 # fixes two vowels in a row
 def fixDoubleVowels(input):
-    syllables = input.split()
+    syllables = input.split('-')
     for i in range(len(syllables)):
         if len(syllables[i]) >= 2:
 			# if the two last letters in a syllable are both vowels, the second vowel moves to the next syllable
@@ -68,11 +68,11 @@ def fixDoubleVowels(input):
                 syllables[i + 1] = syllables[i][-1] + syllables[i + 1]
                 syllables[i] = syllables[i][0:-1]
 
-    return " ".join(syllables)
+    return "-".join(syllables)
 
 # This function makes sure that the onset and the code are ranked correctly by sonorancy
 def fixSonorantConsonants(input): # input is a word initially split into syllables
-    syllables = input.split()
+    syllables = input.split('-')
     i = 0
     while i < len(syllables):
         for char in range(len(syllables[i])):
@@ -117,11 +117,11 @@ def fixSonorantConsonants(input): # input is a word initially split into syllabl
                     break
         i += 1
 
-    return " ".join(syllables)
+    return "-".join(syllables)
 
 # In Dutch, the letter "h" can never be at the coda. This function fixes that.
 def removeHFromCoda(input):
-    syllables = input.split()
+    syllables = input.split('-')
     for i in range(len(syllables)):
         for char in range(len(syllables[i])):
             change = False
@@ -139,7 +139,7 @@ def removeHFromCoda(input):
                 if change:
                     break
 
-    return " ".join(syllables)
+    return "-".join(syllables)
 
 def getSonorant(input):
     if input in glides:
