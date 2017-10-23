@@ -12,9 +12,9 @@ from test_utils import compare_lines, test_rates
 def print_test_rates(comparison):
     
     rates = test_rates(comparison)
-    print("True positive rate (sensitivity): " + rates[0])
-    print("False positive rate:              " + rates[1])
-    print("True negative rate (specificity): " + rates[2])
+    print("True positive rate (sensitivity): " + str(rates[0]))
+    print("False positive rate:              " + str(rates[1]))
+    print("True negative rate (specificity): " + str(rates[2]))
 
 def test1():
     line1 = "peli roca mano roca peli mano peli"
@@ -37,6 +37,23 @@ def test1():
         print_test_rates(line_comparison)
     print(test_comparison)
     print_test_rates(test_comparison)
+    
+#    peli roca mano roca peli mano peli
+#    peli roca mano roca peli mano peli
+#    (6, 21, 0, 0)
+#    True positive rate (sensitivity): 1.0
+#    False positive rate:              0.0
+#    True negative rate (specificity): 1.0
+#    pelo roca mano roca pelo mano pelo
+#    pel oroca mano roca pelomano pelo
+#    (4, 20, 1, 2)
+#    True positive rate (sensitivity): 0.6666666666666666
+#    False positive rate:              0.047619047619047616
+#    True negative rate (specificity): 0.9523809523809523
+#    [10, 41, 1, 2]
+#    True positive rate (sensitivity): 0.8333333333333334
+#    False positive rate:              0.023809523809523808
+#    True negative rate (specificity): 0.9761904761904762
 
 # Overfitting test
 def test2():
@@ -65,6 +82,12 @@ def test2():
 #        print(line_comparison)
     print(test_comparison)
     print_test_rates(test_comparison)
+
+#    test2()
+#    [135023, 517946, 126790, 137224]
+#    True positive rate (sensitivity): 0.495957714869218
+#    False positive rate:              0.19665413440540003
+#    True negative rate (specificity): 0.8033458655946
 
     
     
@@ -100,9 +123,59 @@ def test3():
     print ("\nFULL TEST")
     print (full_comparison)
     print_test_rates(full_comparison)
-    
 
+def test_no_default_separator():
+    line1 = "peli roca mano roca peli mano peli"
+    line2 = "pelo roca mano roca pelo mano pelo"
+    text = [line1, line2]
     
-#test1()
-#test2()
-#test3()
+    separator = ""
+    bigram_appearances = find_bigrams(text[0:1], separator)
+    bigram_probabilities = calculate_statistics(bigram_appearances)
+    test_comparison = [0, 0, 0, 0]
+    for line in text:
+        segmented_line = segment_line(bigram_probabilities, clean_line(line, separator), separator)
+        line_comparison = compare_lines(line, segmented_line)
+        
+        for i_comparison in range(len(line_comparison)):
+            test_comparison[i_comparison] += line_comparison[i_comparison]
+        
+        print(line)
+        print(segmented_line)
+        print(line_comparison)
+        print_test_rates(line_comparison)
+    print(test_comparison)
+    print_test_rates(test_comparison)
+
+def test_syllables1():
+    line1 = "pe-li ro-ca ma-no ro-ca pe-li ma-no pe-li"
+    line2 = "pe-lo ro-ca ma-no ro-ca pe-lo ma-no pe-lo"
+    separator = "-"
+    text = [line1, line2]
+    
+    bigram_appearances = find_bigrams(text[0:1], separator)
+    bigram_probabilities = calculate_statistics(bigram_appearances)
+    test_comparison = [0, 0, 0, 0]
+    for line in text:
+        segmented_line = segment_line(bigram_probabilities, clean_line(line, separator), separator)
+        line_comparison = compare_lines(line, segmented_line, separator)
+        
+        for i_comparison in range(len(line_comparison)):
+            test_comparison[i_comparison] += line_comparison[i_comparison]
+        
+        print(line)
+        print(segmented_line)
+        print(line_comparison)
+        print_test_rates(line_comparison)
+    print(test_comparison)
+    print_test_rates(test_comparison)
+
+####################################
+# Main Method
+
+if __name__ == "__main__":
+#    test1()
+#    test_no_default_separator()
+    test_syllables1()
+    #test2()
+    #test3()
