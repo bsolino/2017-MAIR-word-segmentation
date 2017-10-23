@@ -7,73 +7,14 @@ Created on Wed Oct 18 15:06:16 2017
 from bigram_utils import find_bigrams, calculate_statistics, clean_line, bigram_probabilities_from_data
 from segmentation_utils import segment_line
 from file_utils import load_file, divide_data, prepare_training_test_data
+from test_utils import compare_lines, test_rates
 
-# This assumes there are spaces only in the middle of the string
-#   and never more than two spaces next to each other
-def compare_lines(original_line, test_line):
+def print_test_rates(comparison):
     
-    true_positives = 0  # Space in test, space in original
-    false_positives = 0 # Space in test, NO space in original
-    false_negatives = 0 # NO space in test, space in original
-    true_negatives = 0 # NO space in test, NO space in original
-    
-    j = 0
-    
-    # NEW VERSION (pair of chars by pair of chars)
-    i = 0
-    while i < (len(original_line) -1):
-        pair_o = original_line[i:i+2]
-        pair_t = test_line[j:j+2]
-        
-        is_sep_o = " " in pair_o
-        is_sep_t = " " in pair_t
-        
-        i += 1
-        j += 1
-        if is_sep_o:
-            i += 1 # Skip the space in the next iteration
-            
-        if is_sep_t:
-            j += 1 # Skip the space in the next iteration
-            if is_sep_o:
-                true_positives += 1
-            else:
-                false_positives += 1
-        else:
-            if is_sep_o:
-                false_negatives += 1
-            else:
-                true_negatives += 1
-#        match_type = " Positive" if is_sep_t else " Negative"
-#        print("'" + pair_o + "' == '" + pair_t + "' ? " + str(pair_o == pair_t) + match_type) #TODO REMOVE
-
-##################################
-#
-# OLD CODE (char by char)
-#    for i in range(len(original_line)):
-#        char_o = original_line[i]
-#        char_t = test_line[j]
-#        
-#        is_sep_o = (char_o == " ")
-#        is_sep_t = (char_t == " ")
-#        
-#        j += 1
-#            
-#        if is_sep_t:
-#            if is_sep_o:
-#                true_positives += 1
-#            else:
-#                false_positives += 1
-#                j += 1 # Compensate the extra space
-#        else:
-#            if is_sep_o:
-#                false_negatives += 1
-#                j -= 1 # Compensate the lack of space
-#            else:
-#                true_negatives += 1
-#        print(char_o + " == " + char_t + " ? " + str(char_o == char_t)) #TODO REMOVE
-    
-    return true_positives, true_negatives, false_positives, false_negatives
+    rates = test_rates(comparison)
+    print("True positive rate (sensitivity): " + rates[0])
+    print("False positive rate:              " + rates[1])
+    print("True negative rate (specificity): " + rates[2])
 
 def test1():
     line1 = "peli roca mano roca peli mano peli"
@@ -96,16 +37,6 @@ def test1():
         print_test_rates(line_comparison)
     print(test_comparison)
     print_test_rates(test_comparison)
-    
-def print_test_rates(comparison):
-    tp = comparison[0]
-    tn = comparison[1]
-    fp = comparison[2]
-    fn = comparison[3]
-    
-    print("True positive rate (sensitivity): " + str(tp / (tp + fn)))
-    print("False positive rate:              " + str(fp / (fp + tn)))
-    print("True negative rate (specificity): " + str(tn / (fp + tn)))
 
 # Overfitting test
 def test2():
