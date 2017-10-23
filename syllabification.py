@@ -1,4 +1,5 @@
 import datetime
+import bigram_segmentation.test_utils
 
 shortVowels = ["I", "A", "O", "}", "@"]
 longVowels = ["i", "y", "e", "|", "a", "o", "u", ")"]
@@ -12,10 +13,10 @@ diphthongs = ["K", "L", "M"]
 
 illegalCombinations = ["pm", "pf", "mk", "tm", "tp", "tk"]
 
-# This function splits a word into syllables in the following way: It always splits the consonants between two vowels. The first consonant after the first vowel belongs to the first syllable, all other consonants (if any) belong to the second syllable. For example  "rusten" becomes "rus-ten" and "papapa" becomes "pap-ap-a" 
+# This function splits a word into syllables in the following way: It always splits the consonants between two vowels. The first consonant after the first vowel belongs to the first syllable, all other consonants (if any) belong to the second syllable. For example  "rusten" becomes "rus-ten" and "papapa" becomes "pap-ap-a"
 
 def InitialSplitWordOnSyllable(word):
-	# We first determine the locations of the vowels
+    # We first determine the locations of the vowels
     wordLength = len(word)
     vowelPositions = []
     for i in range(wordLength):
@@ -24,7 +25,7 @@ def InitialSplitWordOnSyllable(word):
             vowelPositions.append(i)
 
     outputWord = word
-	# We keep splitting between two vowels until every syllable contains just one vowel
+    # We keep splitting between two vowels until every syllable contains just one vowel
     for i in range(2, len(vowelPositions) + 1):
         outputWord = outputWord[0:vowelPositions[-i] + 2] + "-" + outputWord[vowelPositions[-i] + 2:]
 
@@ -32,7 +33,7 @@ def InitialSplitWordOnSyllable(word):
 
 # illegal letter combinations (pm, lf, lm, ...)
 # If a syllable starts with a illegal letter combination, the first letter is moved to the previous syllable
-def fixIllegalCombinationsSyllable(input, firstLetter, secondLetter): # input is a word that is already devided into syllables (but syllabification may be wrong)
+def fixIllegalCombinationsSyllable(input, firstLetter, secondLetter): # input is a word that is already divided into syllables (but syllabification may be wrong)
     syllables = input.split('-')
     for i in range(len(syllables)):
         if firstLetter + secondLetter in syllables[i]:
@@ -45,7 +46,7 @@ def fixIllegalCombinationsSyllable(input, firstLetter, secondLetter): # input is
 def fixSingleConsonant(input):
     syllables = input.split('-')
     for i in range(len(syllables)):
-		# If the first letter of a syllable is a vowel and the last letter of the previous syllable is a consonant, we move the consonant
+        # If the first letter of a syllable is a vowel and the last letter of the previous syllable is a consonant, we move the consonant
         if syllables[i][0] in vowels:
             if i - 1 < 0:
                 continue
@@ -61,7 +62,7 @@ def fixDoubleVowels(input):
     syllables = input.split('-')
     for i in range(len(syllables)):
         if len(syllables[i]) >= 2:
-			# if the two last letters in a syllable are both vowels, the second vowel moves to the next syllable
+            # if the two last letters in a syllable are both vowels, the second vowel moves to the next syllable
             if syllables[i][-2] in vowels and syllables[i][-1] in vowels:
                 if i + 1 == len(syllables): # an extra empty syllable is created when needed
                     syllables.append('')
@@ -104,10 +105,10 @@ def fixSonorantConsonants(input): # input is a word initially split into syllabl
                     if rank >= rightLowestRank:
                         rightLowestRank = rank
                         continue
-					# If the last character need to move to the right, then an extra syllable is created at the end
+                    # If the last character need to move to the right, then an extra syllable is created at the end
                     if i + 1 == len(syllables):
                         syllables.append('')
-					# All characters that have lower rank than some character closer to the vowel are moved to the next syllable
+                    # All characters that have lower rank than some character closer to the vowel are moved to the next syllable
                     syllables[i + 1] = syllables[i][rightI:] + syllables[i + 1]
                     syllables[i] = syllables[i][0:rightI]
                     change = True
@@ -125,10 +126,10 @@ def removeHFromCoda(input):
     for i in range(len(syllables)):
         for char in range(len(syllables[i])):
             change = False
-			# search for the vowel in the syllable to find the coda (to the right of the vowel)
+            # search for the vowel in the syllable to find the coda (to the right of the vowel)
             if syllables[i][char] in vowels:
                 for rightI in range(char + 1, len(syllables[i])):
-					# search for an "h" in the coda and move it to next syllable
+                    # search for an "h" in the coda and move it to next syllable
                     if syllables[i][rightI] == 'h':
                         if i + 1 == len(syllables):
                             syllables.append('')
@@ -150,6 +151,7 @@ def getSonorant(input):
         return 3
     if input in stops or input in fricatives:
         return 4
+    return 0
 
 # In this function, we combine the InitialSplitWordOnSyllable function together with all other functions to fix errors in the initial split.
 def splitOnSyllables(input):
@@ -170,30 +172,39 @@ def splitOnSyllables(input):
 
 def prettyPrint(input):
     for i in range(len(input)):
-        print str(i + 1) + ": " + input[i]
+        print(str(i + 1) + ": " + input[i])
 
 def createOutputFile(output):
     currentDatetime = datetime.datetime.now()
     parsedDatetime = str(currentDatetime.day) + "-" + str(currentDatetime.month) + "-" + str(currentDatetime.year) + "_" + str(currentDatetime.hours) + ":" + str(currentDatetime.minutes) + ":" + str(currentDatetime.seconds)
-    with open("syllabificatiion_" + parsedDatetime + ".txt", "w+") as f:
+    with open("syllabification_" + parsedDatetime + ".txt", "w+") as f:
         for line in output:
             f.write(line + "\n")
 
-def compareResults(input, correctSource):
-    with open(correctSource, "r+") as f:
-        return #TODO find a way to compute hit rates etc.
-
 if __name__ == "__main__":
-    lines = []
     with open("corpus/manually_syllabified_corpus.txt", "r+") as f:
         lines = f.readlines()
     lines = [line.strip() for line in lines]
+
+    with open("corpus/DSWC-Syllabified.txt", "r+") as f:
+        originalLines = f.readlines()
+    originalLines = [line.strip() for line in originalLines]
 
     output = []
     for i in range(len(lines)):
         output.append(splitOnSyllables(lines[i]))
 
-    #compareResults(output, "corpus/DSWC-Syllabified.txt")
+    (true_positives, true_negatives, false_positives, false_negatives) = (0, 0, 0, 0)
+    for j in range(len(lines)):
+        result = bigram_segmentation.test_utils.compare_lines(originalLines[j], output[j], "-")
+        true_positives += result[0]
+        true_negatives += result[1]
+        false_positives += result[2]
+        false_negatives += result[3]
+
+    print("TP: {0}\nTN: {1}\nFP: {2}\nFN: {3}".format(true_positives, true_negatives, false_positives, false_negatives))
+    result = bigram_segmentation.test_utils.test_rates([true_positives, true_negatives, false_positives, false_negatives])
+    print("True Positive Rate: {0}\nFalse Positive Rate: {1}\nTrue Negative Rate: {2}".format(result[0], result[1], result[2]))
 
     #createOutputFile(output)
-    prettyPrint(output)
+    #prettyPrint(output)
