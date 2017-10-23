@@ -15,6 +15,22 @@ def print_test_rates(comparison):
     print("True positive rate (sensitivity): " + str(rates[0]))
     print("False positive rate:              " + str(rates[1]))
     print("True negative rate (specificity): " + str(rates[2]))
+    
+def line_2_grams_w_boundaries(line, separator, boundary):
+    if separator != "":
+        line = line.split(separator)
+        aux = []
+        for item in line:
+            if boundary in item:
+                split_item = item.split(boundary)
+                aux.append(split_item[0])
+                for si in split_item[1:]:
+                    aux.append(boundary)
+                    aux.append(si)
+            else:
+                aux.append(item)
+        line = [item for item in aux if item != ""]
+    return line
 
 def test1():
     line1 = "peli roca mano roca peli mano peli"
@@ -151,6 +167,7 @@ def test_syllables1():
     line1 = "pe-li ro-ca ma-no ro-ca pe-li ma-no pe-li"
     line2 = "pe-lo ro-ca ma-no ro-ca pe-lo ma-no pe-lo"
     separator = "-"
+    boundary = " "
     text = [line1, line2]
     
     bigram_appearances = find_bigrams(text[0:1], separator)
@@ -158,8 +175,10 @@ def test_syllables1():
     test_comparison = [0, 0, 0, 0]
     for line in text:
         segmented_line = segment_line(bigram_probabilities, clean_line(line, separator), separator)
-        line_comparison = compare_lines(line, segmented_line, separator)
-        
+        gram_line = line_2_grams_w_boundaries(line, separator, boundary)
+        gram_segmented_line = line_2_grams_w_boundaries(segmented_line, separator, boundary)
+                
+        line_comparison = compare_lines(gram_line, gram_segmented_line)
         for i_comparison in range(len(line_comparison)):
             test_comparison[i_comparison] += line_comparison[i_comparison]
         
@@ -170,6 +189,36 @@ def test_syllables1():
     print(test_comparison)
     print_test_rates(test_comparison)
 
+# Overfitting test
+def test_syllables2():
+    route = "../corpus/DSWC-Syllabified-(1).txt"
+    text = load_file(route)
+    bg_separator = "-"
+    
+    bigram_probabilities = bigram_probabilities_from_data(text, bg_separator)
+    test_comparison = [0, 0, 0, 0]
+    for line in text:
+        line = line.strip()
+        if len(line) < 3:
+            continue
+        segmented_line = segment_line(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
+#        result_line = ""
+#        is_first_word = True
+#        for word in segmented_line:
+#            if not is_first_word:
+#                result_line += " "
+#            else:
+#                is_first_word = False
+#            result_line += word
+        line_comparison = compare_lines(line, segmented_line)
+        for i_comparison in range(len(line_comparison)):
+            test_comparison[i_comparison] += line_comparison[i_comparison]
+        print(line)
+        print(segmented_line)
+        print(line_comparison)
+    print(test_comparison)
+    print_test_rates(test_comparison)
+
 ####################################
 # Main Method
 
@@ -177,5 +226,7 @@ if __name__ == "__main__":
 #    test1()
 #    test_no_default_separator()
     test_syllables1()
+    test_syllables2()
     #test2()
     #test3()
+    print ("Current state: Segments with syllables (maybe more testing is needed). Hit/miss rate takes syllables as units")

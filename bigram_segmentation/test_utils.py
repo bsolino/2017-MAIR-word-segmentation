@@ -7,7 +7,7 @@ Created on Mon Oct 23 12:14:53 2017
 
 # This assumes there are separators only in the middle of the string
 #   and never more than two spaces next to each other
-def compare_lines(original_line, test_line, sep = " "):
+def compare_lines(original_line, test_line, boundary = " "):
     
     # TODO When comparing with syllables, consider each syllable as a bigram
     
@@ -21,11 +21,11 @@ def compare_lines(original_line, test_line, sep = " "):
     # NEW VERSION (bigram by bigram)
     i = 0
     while i < (len(original_line) -1):
-        pair_o = original_line[i:i+2]
-        pair_t = test_line[j:j+2]
+        pair_o = original_line[i] + original_line[i+1]
+        pair_t = test_line[j] + test_line[j+1]
         
-        is_sep_o = sep in pair_o
-        is_sep_t = sep in pair_t
+        is_sep_o = boundary in pair_o
+        is_sep_t = boundary in pair_t
         
         i += 1
         j += 1
@@ -43,34 +43,10 @@ def compare_lines(original_line, test_line, sep = " "):
                 false_negatives += 1
             else:
                 true_negatives += 1
+        #TODO REMOVE DEBUG
 #        match_type = " Positive" if is_sep_t else " Negative"
-#        print("'" + pair_o + "' == '" + pair_t + "' ? " + str(pair_o == pair_t) + match_type) #TODO REMOVE
+#        print("'" + pair_o + "' == '" + pair_t + "' ? " + str(pair_o == pair_t) + match_type)
 
-##################################
-#
-# OLD CODE (char by char)
-#    for i in range(len(original_line)):
-#        char_o = original_line[i]
-#        char_t = test_line[j]
-#        
-#        is_sep_o = (char_o == " ")
-#        is_sep_t = (char_t == " ")
-#        
-#        j += 1
-#            
-#        if is_sep_t:
-#            if is_sep_o:
-#                true_positives += 1
-#            else:
-#                false_positives += 1
-#                j += 1 # Compensate the extra space
-#        else:
-#            if is_sep_o:
-#                false_negatives += 1
-#                j -= 1 # Compensate the lack of space
-#            else:
-#                true_negatives += 1
-#        print(char_o + " == " + char_t + " ? " + str(char_o == char_t)) #TODO REMOVE
     
     return true_positives, true_negatives, false_positives, false_negatives
 
