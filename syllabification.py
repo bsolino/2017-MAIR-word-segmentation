@@ -186,7 +186,7 @@ if __name__ == "__main__":
         lines = f.readlines()
     lines = [line.strip() for line in lines]
 
-    with open("corpus/DSWC-Syllabified.txt", "r+") as f:
+    with open("corpus/DSWC-Syllabified-(1).txt", "r+") as f:
         originalLines = f.readlines()
     originalLines = [line.strip() for line in originalLines]
 
