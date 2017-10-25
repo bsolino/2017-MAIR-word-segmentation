@@ -76,16 +76,18 @@ def test_default_bg_separator():
 #    True negative rate (specificity): 0.9761904761904762
 
 # Overfitting test
-def test2():
+def test_phoneme_overfitting():
+    print("Phoneme segmentation, training and testing with whole corpus")
     route = "../corpus/CGN-NL-50k-utt.txt"
     text = load_file(route)
-    bigram_probabilities = bigram_probabilities_from_data(text)
+    bg_separator = ""
+    bigram_probabilities = bigram_probabilities_from_data(text, bg_separator)
     test_comparison = [0, 0, 0, 0]
     for line in text:
         line = line.strip()
         if len(line) < 3:
             continue
-        segmented_line = segment_line(bigram_probabilities, clean_line(line))
+        segmented_line = segment_line(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
 #        result_line = ""
 #        is_first_word = True
 #        for word in segmented_line:
@@ -111,10 +113,12 @@ def test2():
 
     
     
-def test3():
+def test_phoneme_10_fold_cv():
+    print("Phoneme segmentation, 10-fold crosss validation whole corpus")
     route = "../corpus/CGN-NL-50k-utt.txt"
     text = load_file(route)
     randomize = True
+    bg_separator = ""
 
     full_comparison = [0, 0, 0, 0]
 
@@ -122,13 +126,13 @@ def test3():
     for i in range(len(divided_data)):
         training_data, test_data = prepare_training_test_data(divided_data, i)
     #    training_data, test_data = prepare_training_test_data(divided_data, 0)
-        bigram_probabilities = bigram_probabilities_from_data(training_data)
+        bigram_probabilities = bigram_probabilities_from_data(training_data, bg_separator)
         test_comparison = [0, 0, 0, 0]
         for line in test_data:
             line = line.strip()
             if len(line) < 3:
                 continue
-            segmented_line = segment_line(bigram_probabilities, clean_line(line))
+            segmented_line = segment_line(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
             line_comparison = compare_lines(line, segmented_line)
             for i_comparison in range(len(line_comparison)):
                 test_comparison[i_comparison] += line_comparison[i_comparison]
@@ -144,7 +148,7 @@ def test3():
     print (full_comparison)
     print_test_rates(full_comparison)
 
-def test_no_default_bg_separator():
+def test_phoneme_toy():
     print("Phoneme segmentation (toy problem)")
 
     training_line = "peli roca mano roca peli mano peli"
@@ -169,7 +173,7 @@ def test_no_default_bg_separator():
     print(test_comparison)
     print_test_rates(test_comparison)
 
-def test_syllables1():
+def test_syllables_toy():
     print("Syllable segmentation (toy problem)")
 
     training_line = "pe-li ro-ca ma-no ro-ca pe-li ma-no pe-li"
@@ -198,8 +202,8 @@ def test_syllables1():
     print_test_rates(test_comparison)
 
 # Overfitting test
-def test_syllables2():
-    print("Training and testing syllable segmentation with the whole corpus")
+def test_syllables_overfitting():
+    print("Syllable segmentation: Training and testing with whole corpus")
 
     route = "../corpus/CGN-NL-50k-utt-syllables.txt"
     text = load_file(route)
@@ -239,9 +243,9 @@ def test_syllables2():
 
 if __name__ == "__main__":
 #    test_default_bg_separator() # This functionality is potentially confusing, so I'll avoid implementing it
-    test_no_default_bg_separator()
-    test_syllables1()
-    test_syllables2()
-    #test2()
-    #test3()
+    test_phoneme_toy()
+    test_phoneme_overfitting()
+    test_phoneme_10_fold_cv()
+    test_syllables_toy()
+    test_syllables_overfitting()
     print ("Current state: Segments with syllables (maybe more testing is needed). Hit/miss rate takes syllables as units")
