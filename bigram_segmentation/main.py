@@ -32,7 +32,11 @@ def line_2_grams_w_boundaries(line, separator, boundary):
         line = [item for item in aux if item != ""]
     return line
 
-def test1():
+# Use this test to check whether it works without assigning a bg_separator
+# Default bg_separator are a liability, so I recommend not using this
+def test_default_bg_separator():
+    print("Test if it works with default bigram separators")
+
     line1 = "peli roca mano roca peli mano peli"
     line2 = "pelo roca mano roca pelo mano pelo"
     text = [line1, line2]
@@ -140,17 +144,19 @@ def test3():
     print (full_comparison)
     print_test_rates(full_comparison)
 
-def test_no_default_separator():
-    line1 = "peli roca mano roca peli mano peli"
-    line2 = "pelo roca mano roca pelo mano pelo"
-    text = [line1, line2]
+def test_no_default_bg_separator():
+    print("Phoneme segmentation (toy problem)")
+
+    training_line = "peli roca mano roca peli mano peli"
+    testing_line = "pelo roca mano roca pelo mano pelo"
+    text = [training_line, testing_line]
     
-    separator = ""
-    bigram_appearances = find_bigrams(text[0:1], separator)
+    bg_separator = ""
+    bigram_appearances = find_bigrams(text[0:1], bg_separator)
     bigram_probabilities = calculate_statistics(bigram_appearances)
     test_comparison = [0, 0, 0, 0]
     for line in text:
-        segmented_line = segment_line(bigram_probabilities, clean_line(line, separator), separator)
+        segmented_line = segment_line(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
         line_comparison = compare_lines(line, segmented_line)
         
         for i_comparison in range(len(line_comparison)):
@@ -164,11 +170,13 @@ def test_no_default_separator():
     print_test_rates(test_comparison)
 
 def test_syllables1():
-    line1 = "pe-li ro-ca ma-no ro-ca pe-li ma-no pe-li"
-    line2 = "pe-lo ro-ca ma-no ro-ca pe-lo ma-no pe-lo"
+    print("Syllable segmentation (toy problem)")
+
+    training_line = "pe-li ro-ca ma-no ro-ca pe-li ma-no pe-li"
+    testing_line = "pe-lo ro-ca ma-no ro-ca pe-lo ma-no pe-lo"
     separator = "-"
     boundary = " "
-    text = [line1, line2]
+    text = [training_line, testing_line]
     
     bigram_appearances = find_bigrams(text[0:1], separator)
     bigram_probabilities = calculate_statistics(bigram_appearances)
@@ -191,6 +199,8 @@ def test_syllables1():
 
 # Overfitting test
 def test_syllables2():
+    print("Training and testing syllable segmentation with the whole corpus")
+
     route = "../corpus/CGN-NL-50k-utt-syllables.txt"
     text = load_file(route)
     bg_separator = "-"
@@ -218,9 +228,9 @@ def test_syllables2():
 #            else:
 #                is_first_word = False
 #            result_line += word
-        print(line)
-        print(segmented_line)
-        print(line_comparison)
+#        print(line)
+#        print(segmented_line)
+#        print(line_comparison)
     print(test_comparison)
     print_test_rates(test_comparison)
 
@@ -228,8 +238,8 @@ def test_syllables2():
 # Main Method
 
 if __name__ == "__main__":
-#    test1()
-#    test_no_default_separator()
+#    test_default_bg_separator() # This functionality is potentially confusing, so I'll avoid implementing it
+    test_no_default_bg_separator()
     test_syllables1()
     test_syllables2()
     #test2()
