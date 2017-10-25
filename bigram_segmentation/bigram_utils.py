@@ -84,7 +84,15 @@ def update_bigrams(bigrams, line_bigrams):
     return bigrams
 
 # Calculates the percentage of occurrences of each bigram
-def calculate_statistics(bigrams, syllables, separator):
+def calculate_absolute_probabilities(bigrams):
+    total = sum(bigrams.values())
+    statistics = {}
+    for key, value in bigrams.items():
+        statistics[key] = value/total
+    return statistics
+
+# Calculates the percentage of occurrences of each bigram
+def calculate_syllable_statistics(bigrams, syllables, separator):
     statistics = {}
     for key, value in bigrams.items():
         syllableCount = syllables[key.split(separator)[0]]
@@ -104,10 +112,14 @@ def calculate_statistics(bigrams, syllables, separator):
     #plt.show()
     return statistics
 
-def bigram_probabilities_from_data(data, bg_separator):
+def bigram_absolute_probabilities_from_data(data, bg_separator):
+    bigram_appearances = find_bigrams(data, bg_separator)
+    return calculate_absolute_probabilities(bigram_appearances)
+
+def syllable_probabilities_from_data(data, bg_separator):
     bigram_appearances = find_bigrams(data, bg_separator)
     syllables_appearances = find_syllables(data, bg_separator)
-    return calculate_statistics(bigram_appearances, syllables_appearances, bg_separator)
+    return calculate_syllable_statistics(bigram_appearances, syllables_appearances, bg_separator)
 
 # Removes trailing whitespaces and separators
 def clean_line(line, bg_separator):

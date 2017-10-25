@@ -9,8 +9,6 @@ Created on Mon Oct 23 12:14:53 2017
 #   and never more than two spaces next to each other
 def compare_lines(original_line, test_line, boundary = " "):
     
-    # TODO When comparing with syllables, consider each syllable as a bigram
-    
     true_positives = 0  # Space in test, space in original
     false_positives = 0 # Space in test, NO space in original
     false_negatives = 0 # NO space in test, space in original

@@ -4,8 +4,8 @@ Created on Wed Oct 18 15:06:16 2017
 
 @author: Breixo
 """
-from bigram_utils import find_bigrams, find_syllables, calculate_statistics, clean_line, bigram_probabilities_from_data
-from segmentation_utils import segment_line
+from bigram_utils import find_bigrams, find_syllables, calculate_absolute_probabilities, calculate_syllable_statistics, clean_line, bigram_absolute_probabilities_from_data, syllable_probabilities_from_data
+from segmentation_utils import segment_line_contiguous_probability, segment_line_threshold
 from file_utils import load_file, divide_data, prepare_training_test_data
 from test_utils import compare_lines, test_rates
 
@@ -14,7 +14,7 @@ def print_test_rates(comparison):
     rates = test_rates(comparison)
     print("True positive rate (sensitivity): " + str(rates[0]))
     print("False positive rate:              " + str(rates[1]))
-    print("True negative rate (specificity): " + str(rates[2]))
+#    print("True negative rate (specificity): " + str(rates[2]))
     
 def line_2_grams_w_boundaries(line, separator, boundary):
     if separator != "":
@@ -38,10 +38,37 @@ def test1():
     text = [line1, line2]
     
     bigram_appearances = find_bigrams(text[0:1], " ")
-    bigram_probabilities = calculate_statistics(bigram_appearances)
+    bigram_probabilities = calculate_syllable_statistics(bigram_appearances)
     test_comparison = [0, 0, 0, 0]
     for line in text:
-        segmented_line = segment_line(bigram_probabilities, clean_line(line, " "), "")
+        segmented_line = segment_line_threshold(bigram_probabilities, clean_line(line, " "), "")
+        line_comparison = compare_lines(line, segmented_line)
+        
+        for i_comparison in range(len(line_comparison)):
+            test_comparison[i_comparison] += line_comparison[i_comparison]
+        
+        print(line)
+        print(segmented_line)
+        print(line_comparison)
+        print_test_rates(line_comparison)
+    print(test_comparison)
+    print_test_rates(test_comparison)
+    
+
+# Use this test to check whether it works without assigning a bg_separator
+# Default bg_separator are a liability, so I recommend not using this
+def test_default_bg_separator():
+    print("Test if it works with default bigram separators")
+
+    line1 = "peli roca mano roca peli mano peli"
+    line2 = "pelo roca mano roca pelo mano pelo"
+    text = [line1, line2]
+    
+    bigram_appearances = find_bigrams(text[0:1])
+    bigram_probabilities = calculate_absolute_probabilities(bigram_appearances)
+    test_comparison = [0, 0, 0, 0]
+    for line in text:
+        segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line))
         line_comparison = compare_lines(line, segmented_line)
         
         for i_comparison in range(len(line_comparison)):
@@ -72,16 +99,18 @@ def test1():
 #    True negative rate (specificity): 0.9761904761904762
 
 # Overfitting test
-def test2():
+def test_phoneme_overfitting():
+    print("Phoneme segmentation, training and testing with whole corpus")
     route = "../corpus/CGN-NL-50k-utt.txt"
     text = load_file(route)
-    bigram_probabilities = bigram_probabilities_from_data(text)
+    bg_separator = ""
+    bigram_probabilities = bigram_absolute_probabilities_from_data(text, bg_separator)
     test_comparison = [0, 0, 0, 0]
     for line in text:
         line = line.strip()
         if len(line) < 3:
             continue
-        segmented_line = segment_line(bigram_probabilities, clean_line(line))
+        segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
 #        result_line = ""
 #        is_first_word = True
 #        for word in segmented_line:
@@ -105,10 +134,14 @@ def test2():
 #    False positive rate:              0.19665413440540003
 #    True negative rate (specificity): 0.8033458655946
 
-def test3():
+    
+    
+def test_phoneme_10_fold_cv():
+    print("Phoneme segmentation, 10-fold crosss validation whole corpus")
     route = "../corpus/CGN-NL-50k-utt.txt"
     text = load_file(route)
     randomize = True
+    bg_separator = ""
 
     full_comparison = [0, 0, 0, 0]
 
@@ -116,13 +149,13 @@ def test3():
     for i in range(len(divided_data)):
         training_data, test_data = prepare_training_test_data(divided_data, i)
     #    training_data, test_data = prepare_training_test_data(divided_data, 0)
-        bigram_probabilities = bigram_probabilities_from_data(training_data)
+        bigram_probabilities = bigram_absolute_probabilities_from_data(training_data, bg_separator)
         test_comparison = [0, 0, 0, 0]
         for line in test_data:
             line = line.strip()
             if len(line) < 3:
                 continue
-            segmented_line = segment_line(bigram_probabilities, clean_line(line))
+            segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
             line_comparison = compare_lines(line, segmented_line)
             for i_comparison in range(len(line_comparison)):
                 test_comparison[i_comparison] += line_comparison[i_comparison]
@@ -138,17 +171,19 @@ def test3():
     print (full_comparison)
     print_test_rates(full_comparison)
 
-def test_no_default_separator():
-    line1 = "peli roca mano roca peli mano peli"
-    line2 = "pelo roca mano roca pelo mano pelo"
-    text = [line1, line2]
+def test_phoneme_toy():
+    print("Phoneme segmentation (toy problem)")
+
+    training_line = "peli roca mano roca peli mano peli"
+    testing_line = "pelo roca mano roca pelo mano pelo"
+    text = [training_line, testing_line]
     
-    separator = ""
-    bigram_appearances = find_bigrams(text[0:1], separator)
-    bigram_probabilities = calculate_statistics(bigram_appearances)
+    bg_separator = ""
+    bigram_appearances = find_bigrams(text[0:1], bg_separator)
+    bigram_probabilities = calculate_absolute_probabilities(bigram_appearances)
     test_comparison = [0, 0, 0, 0]
     for line in text:
-        segmented_line = segment_line(bigram_probabilities, clean_line(line, separator), separator)
+        segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
         line_comparison = compare_lines(line, segmented_line)
         
         for i_comparison in range(len(line_comparison)):
@@ -161,6 +196,71 @@ def test_no_default_separator():
     print(test_comparison)
     print_test_rates(test_comparison)
 
+def test_syllables_toy():
+    print("Syllable segmentation (toy problem)")
+
+    training_line = "pe-li ro-ca ma-no ro-ca pe-li ma-no pe-li"
+    testing_line = "pe-lo ro-ca ma-no ro-ca pe-lo ma-no pe-lo"
+    separator = "-"
+    boundary = " "
+    text = [training_line, testing_line]
+    
+    bigram_appearances = find_bigrams(text[0:1], separator)
+    bigram_probabilities = calculate_absolute_probabilities(bigram_appearances)
+    test_comparison = [0, 0, 0, 0]
+    for line in text:
+        segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, separator), separator)
+        gram_line = line_2_grams_w_boundaries(line, separator, boundary)
+        gram_segmented_line = line_2_grams_w_boundaries(segmented_line, separator, boundary)
+                
+        line_comparison = compare_lines(gram_line, gram_segmented_line)
+        for i_comparison in range(len(line_comparison)):
+            test_comparison[i_comparison] += line_comparison[i_comparison]
+        
+        print(line)
+        print(segmented_line)
+        print(line_comparison)
+        print_test_rates(line_comparison)
+    print(test_comparison)
+    print_test_rates(test_comparison)
+
+# Overfitting test
+def test_syllables_overfitting():
+    print("Syllable segmentation: Training and testing with whole corpus")
+
+    route = "../corpus/CGN-NL-50k-utt-syllables.txt"
+    text = load_file(route)
+    bg_separator = "-"
+    boundary = ' '
+    
+    bigram_probabilities = bigram_absolute_probabilities_from_data(text, bg_separator)
+    test_comparison = [0, 0, 0, 0]
+    for line in text:
+        line = line.strip()
+        if len(line) < 3:
+            continue
+        segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
+        gram_line = line_2_grams_w_boundaries(line, bg_separator, boundary)
+        gram_segmented_line = line_2_grams_w_boundaries(segmented_line, bg_separator, boundary)
+                
+        line_comparison = compare_lines(gram_line, gram_segmented_line)
+        for i_comparison in range(len(line_comparison)):
+            test_comparison[i_comparison] += line_comparison[i_comparison]
+        
+#        result_line = ""
+#        is_first_word = True
+#        for word in segmented_line:
+#            if not is_first_word:
+#                result_line += " "
+#            else:
+#                is_first_word = False
+#            result_line += word
+#        print(line)
+#        print(segmented_line)
+#        print(line_comparison)
+    print(test_comparison)
+    print_test_rates(test_comparison)
+
 def test_syllables1():
     line1 = "pe-li ro-ca ma-no ro-ca pe-li ma-no pe-li"
     line2 = "pe-lo ro-ca ma-no ro-ca pe-lo ma-no pe-lo"
@@ -170,10 +270,10 @@ def test_syllables1():
     
     bigram_appearances = find_bigrams(text[0:2], separator)
     syllable_appearances = find_syllables(text[0:2], separator)
-    bigram_probabilities = calculate_statistics(bigram_appearances, syllable_appearances, separator)
+    bigram_probabilities = calculate_syllable_statistics(bigram_appearances, syllable_appearances, separator)
     test_comparison = [0, 0, 0, 0]
     for line in text:
-        segmented_line = segment_line(bigram_probabilities, clean_line(line, separator), separator)
+        segmented_line = segment_line_threshold(bigram_probabilities, clean_line(line, separator), separator)
         gram_line = line_2_grams_w_boundaries(line, separator, boundary)
         gram_segmented_line = line_2_grams_w_boundaries(segmented_line, separator, boundary)
                 
@@ -195,13 +295,13 @@ def test_syllables2():
     bg_separator = "-"
     boundary = ' '
     
-    bigram_probabilities = bigram_probabilities_from_data(text, bg_separator)
+    bigram_probabilities = syllable_probabilities_from_data(text, bg_separator)
     test_comparison = [0, 0, 0, 0]
     for line in text:
         line = line.strip()
         if len(line) < 2:
             continue
-        segmented_line = segment_line(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
+        segmented_line = segment_line_threshold(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
         gram_line = line_2_grams_w_boundaries(line, bg_separator, boundary)
         gram_segmented_line = line_2_grams_w_boundaries(segmented_line, bg_separator, boundary)
                 
@@ -228,9 +328,12 @@ def test_syllables2():
 
 if __name__ == "__main__":
     #test1()
-    #test_no_default_separator()
+#    test_default_bg_separator() # This functionality is potentially confusing, so I'll avoid implementing it
+    test_phoneme_toy()
+    test_phoneme_overfitting()
+    test_phoneme_10_fold_cv()
+    test_syllables_toy()
+    test_syllables_overfitting()
     #test_syllables1()
     test_syllables2()
-    #test2()
-    #test3()
     print ("Current state: Segments with syllables (maybe more testing is needed). Hit/miss rate takes syllables as units")
