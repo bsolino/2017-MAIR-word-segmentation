@@ -191,9 +191,10 @@ def test_syllables1():
 
 # Overfitting test
 def test_syllables2():
-    route = "../corpus/DSWC-Syllabified-(1).txt"
+    route = "../corpus/CGN-NL-50k-utt-syllables.txt"
     text = load_file(route)
     bg_separator = "-"
+    boundary = ' '
     
     bigram_probabilities = bigram_probabilities_from_data(text, bg_separator)
     test_comparison = [0, 0, 0, 0]
@@ -202,6 +203,13 @@ def test_syllables2():
         if len(line) < 3:
             continue
         segmented_line = segment_line(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
+        gram_line = line_2_grams_w_boundaries(line, bg_separator, boundary)
+        gram_segmented_line = line_2_grams_w_boundaries(segmented_line, bg_separator, boundary)
+                
+        line_comparison = compare_lines(gram_line, gram_segmented_line)
+        for i_comparison in range(len(line_comparison)):
+            test_comparison[i_comparison] += line_comparison[i_comparison]
+        
 #        result_line = ""
 #        is_first_word = True
 #        for word in segmented_line:
@@ -210,9 +218,6 @@ def test_syllables2():
 #            else:
 #                is_first_word = False
 #            result_line += word
-        line_comparison = compare_lines(line, segmented_line)
-        for i_comparison in range(len(line_comparison)):
-            test_comparison[i_comparison] += line_comparison[i_comparison]
         print(line)
         print(segmented_line)
         print(line_comparison)
