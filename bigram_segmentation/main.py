@@ -4,7 +4,7 @@ Created on Wed Oct 18 15:06:16 2017
 
 @author: Breixo
 """
-from bigram_utils import find_bigrams, find_syllables, calculate_absolute_probabilities, calculate_syllable_statistics, clean_line, bigram_absolute_probabilities_from_data, syllable_probabilities_from_data
+from bigram_utils import find_bigrams, find_syllables, calculate_absolute_probabilities, calculate_syllable_statistics, clean_line, bigram_absolute_probabilities_from_data, bigram_transitional_probabilities_from_data
 from segmentation_utils import segment_line_contiguous_probability, segment_line_threshold
 from file_utils import load_file, divide_data, prepare_training_test_data
 from test_utils import compare_lines, test_rates
@@ -32,16 +32,18 @@ def line_2_grams_w_boundaries(line, separator, boundary):
         line = [item for item in aux if item != ""]
     return line
 
-def test1():
-    line1 = "peli roca mano roca peli mano peli roca"
-    line2 = "pelo roca mano roca pelo mano pelo roca"
+def test_absolute_phoneme_toy_transitional():
+    line1 = "peli rucy mano rucy peli mano peli"
+    line2 = "pelo rucy mano rucy pelo mano pelo"
     text = [line1, line2]
+    bg_separator = ""
     
-    bigram_appearances = find_bigrams(text[0:1], " ")
-    bigram_probabilities = calculate_syllable_statistics(bigram_appearances)
+    bigram_appearances = find_bigrams(text[0:1], bg_separator)
+    unit_appearances = find_syllables(text[0:1], bg_separator)
+    bigram_probabilities = calculate_syllable_statistics(bigram_appearances, unit_appearances, bg_separator)
     test_comparison = [0, 0, 0, 0]
     for line in text:
-        segmented_line = segment_line_threshold(bigram_probabilities, clean_line(line, " "), "")
+        segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
         line_comparison = compare_lines(line, segmented_line)
         
         for i_comparison in range(len(line_comparison)):
@@ -53,11 +55,11 @@ def test1():
         print_test_rates(line_comparison)
     print(test_comparison)
     print_test_rates(test_comparison)
-    
+
 
 # Use this test to check whether it works without assigning a bg_separator
 # Default bg_separator are a liability, so I recommend not using this
-def test_default_bg_separator():
+def test_absolute_default_bg_separator():
     print("Test if it works with default bigram separators")
 
     line1 = "peli roca mano roca peli mano peli"
@@ -99,7 +101,7 @@ def test_default_bg_separator():
 #    True negative rate (specificity): 0.9761904761904762
 
 # Overfitting test
-def test_phoneme_overfitting():
+def test_absolute_phoneme_overfitting():
     print("Phoneme segmentation, training and testing with whole corpus")
     route = "../corpus/CGN-NL-50k-utt.txt"
     text = load_file(route)
@@ -128,7 +130,7 @@ def test_phoneme_overfitting():
     print(test_comparison)
     print_test_rates(test_comparison)
 
-#    test2()
+#    test_absolute_phoneme_overfitting()
 #    [135023, 517946, 126790, 137224]
 #    True positive rate (sensitivity): 0.495957714869218
 #    False positive rate:              0.19665413440540003
@@ -136,7 +138,7 @@ def test_phoneme_overfitting():
 
     
     
-def test_phoneme_10_fold_cv():
+def test_absolute_phoneme_10_fold_cv():
     print("Phoneme segmentation, 10-fold crosss validation whole corpus")
     route = "../corpus/CGN-NL-50k-utt.txt"
     text = load_file(route)
@@ -162,16 +164,303 @@ def test_phoneme_10_fold_cv():
 #            print(line)
 #            print(segmented_line)
 #            print(line_comparison)
-        print("\nTEST " + str(i+1))
-        print(test_comparison)
-        print_test_rates(test_comparison)
+# =============================================================================
+#         print("\nTEST " + str(i+1))
+#         print(test_comparison)
+#         print_test_rates(test_comparison)
+        for i_comparison in range(len(test_comparison)):
+            full_comparison[i_comparison] += test_comparison[i_comparison]
+# =============================================================================
+    print ("\nFULL TEST")
+    print (full_comparison)
+    print_test_rates(full_comparison)
+    
+def test_absolute_phoneme_sentence_10_fold_cv():
+    print("Phoneme segmentation (w/ sentence boundaries), 10-fold crosss validation whole corpus")
+    route = "../corpus/CGN-NL-50k-utt-sentence.txt"
+    text = load_file(route)
+    randomize = True
+    bg_separator = ""
+
+    full_comparison = [0, 0, 0, 0]
+
+    divided_data = divide_data(text, randomize)
+    for i in range(len(divided_data)):
+        training_data, test_data = prepare_training_test_data(divided_data, i)
+    #    training_data, test_data = prepare_training_test_data(divided_data, 0)
+        bigram_probabilities = bigram_absolute_probabilities_from_data(training_data, bg_separator)
+        test_comparison = [0, 0, 0, 0]
+        for line in test_data:
+            line = line.strip()
+            if len(line) < 3:
+                continue
+            segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
+            line_comparison = compare_lines(line, segmented_line)
+            for i_comparison in range(len(line_comparison)):
+                test_comparison[i_comparison] += line_comparison[i_comparison]
+#            print(line)
+#            print(segmented_line)
+#            print(line_comparison)
+# =============================================================================
+#         print("\nTEST " + str(i+1))
+#         print(test_comparison)
+#         print_test_rates(test_comparison)
+        for i_comparison in range(len(test_comparison)):
+            full_comparison[i_comparison] += test_comparison[i_comparison]
+# =============================================================================
+    print ("\nFULL TEST")
+    print (full_comparison)
+    print_test_rates(full_comparison)
+    
+    
+    
+def test_transitional_phoneme_10_fold_cv():
+    print("Phoneme segmentation, 10-fold crosss validation whole corpus (transitional)")
+    route = "../corpus/CGN-NL-50k-utt.txt"
+    text = load_file(route)
+    randomize = True
+    bg_separator = ""
+
+    full_comparison = [0, 0, 0, 0]
+
+    divided_data = divide_data(text, randomize)
+    for i in range(len(divided_data)):
+        training_data, test_data = prepare_training_test_data(divided_data, i)
+    #    training_data, test_data = prepare_training_test_data(divided_data, 0)
+        bigram_probabilities = bigram_transitional_probabilities_from_data(training_data, bg_separator)
+        test_comparison = [0, 0, 0, 0]
+        for line in test_data:
+            line = line.strip()
+            if len(line) < 3:
+                continue
+            segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
+            line_comparison = compare_lines(line, segmented_line)
+            for i_comparison in range(len(line_comparison)):
+                test_comparison[i_comparison] += line_comparison[i_comparison]
+#            print(line)
+#            print(segmented_line)
+#            print(line_comparison)
+# =============================================================================
+#         print("\nTEST " + str(i+1))
+#         print(test_comparison)
+#         print_test_rates(test_comparison)
+        for i_comparison in range(len(test_comparison)):
+            full_comparison[i_comparison] += test_comparison[i_comparison]
+# =============================================================================
+    print ("\nFULL TEST")
+    print (full_comparison)
+    print_test_rates(full_comparison)
+    
+def test_transitional_phoneme_sentence_10_fold_cv(threshold):
+    print("\nPhoneme segmentation (w/ sentence boundaries), 10-fold crosss validation whole corpus (transitional). Threshold = " + str(threshold))
+    route = "../corpus/CGN-NL-50k-utt-sentence.txt"
+    text = load_file(route)
+    randomize = True
+    bg_separator = ""
+
+    full_comparison = [0, 0, 0, 0]
+
+    divided_data = divide_data(text, randomize)
+    for i in range(len(divided_data)):
+        training_data, test_data = prepare_training_test_data(divided_data, i)
+    #    training_data, test_data = prepare_training_test_data(divided_data, 0)
+        bigram_probabilities = bigram_transitional_probabilities_from_data(training_data, bg_separator)
+        test_comparison = [0, 0, 0, 0]
+        for line in test_data:
+            line = line.strip()
+            if len(line) < 3:
+                continue
+            segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator, threshold)
+            line_comparison = compare_lines(line, segmented_line)
+            for i_comparison in range(len(line_comparison)):
+                test_comparison[i_comparison] += line_comparison[i_comparison]
+#            print(line)
+#            print(segmented_line)
+#            print(line_comparison)
+# =============================================================================
+#         print("\nTEST " + str(i+1))
+#         print(test_comparison)
+#         print_test_rates(test_comparison)
+        for i_comparison in range(len(test_comparison)):
+            full_comparison[i_comparison] += test_comparison[i_comparison]
+# =============================================================================
+    print ("FULL TEST")
+    print (full_comparison)
+    print_test_rates(full_comparison)
+    
+    
+def test_absolute_syllable_10_fold_cv():
+    print("Syllable segmentation, 10-fold crosss validation whole corpus")
+    route = "../corpus/CGN-NL-50k-utt-syllables.txt"
+    text = load_file(route)
+    randomize = True
+    bg_separator = "-"
+    boundary = " "
+
+    full_comparison = [0, 0, 0, 0]
+
+    divided_data = divide_data(text, randomize)
+    for i in range(len(divided_data)):
+        training_data, test_data = prepare_training_test_data(divided_data, i)
+    #    training_data, test_data = prepare_training_test_data(divided_data, 0)
+        bigram_probabilities = bigram_absolute_probabilities_from_data(training_data, bg_separator)
+        test_comparison = [0, 0, 0, 0]
+        for line in test_data:
+            line = line.strip()
+            if len(line) < 3:
+                continue
+            segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
+            gram_line = line_2_grams_w_boundaries(line, bg_separator, boundary)
+            gram_segmented_line = line_2_grams_w_boundaries(segmented_line, bg_separator, boundary)
+                    
+            line_comparison = compare_lines(gram_line, gram_segmented_line)
+            for i_comparison in range(len(line_comparison)):
+                test_comparison[i_comparison] += line_comparison[i_comparison]
+#            print(line)
+#            print(segmented_line)
+#            print(line_comparison)
+# =============================================================================
+#         print("\nTEST " + str(i+1))
+#         print(test_comparison)
+#         print_test_rates(test_comparison)
+        for i_comparison in range(len(test_comparison)):
+            full_comparison[i_comparison] += test_comparison[i_comparison]
+# =============================================================================
+    print ("\nFULL TEST")
+    print (full_comparison)
+    print_test_rates(full_comparison)
+    
+def test_absolute_syllable_sentence_10_fold_cv():
+    print("Syllable segmentation (w/ sentence boundaries), 10-fold crosss validation whole corpus")
+    route = "../corpus/CGN-NL-50k-utt-syllables-sentence.txt"
+    text = load_file(route)
+    randomize = True
+    bg_separator = "-"
+    boundary = " "
+
+    full_comparison = [0, 0, 0, 0]
+
+    divided_data = divide_data(text, randomize)
+    for i in range(len(divided_data)):
+        training_data, test_data = prepare_training_test_data(divided_data, i)
+    #    training_data, test_data = prepare_training_test_data(divided_data, 0)
+        bigram_probabilities = bigram_absolute_probabilities_from_data(training_data, bg_separator)
+        test_comparison = [0, 0, 0, 0]
+        for line in test_data:
+            line = line.strip()
+            if len(line) < 3:
+                continue
+            segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
+            gram_line = line_2_grams_w_boundaries(line, bg_separator, boundary)
+            gram_segmented_line = line_2_grams_w_boundaries(segmented_line, bg_separator, boundary)
+                    
+            line_comparison = compare_lines(gram_line, gram_segmented_line)
+            for i_comparison in range(len(line_comparison)):
+                test_comparison[i_comparison] += line_comparison[i_comparison]
+#            print(line)
+#            print(segmented_line)
+#            print(line_comparison)
+
+# =============================================================================
+#         print("\nTEST " + str(i+1))
+#         print(test_comparison)
+#         print_test_rates(test_comparison)
+# =============================================================================
+
         for i_comparison in range(len(test_comparison)):
             full_comparison[i_comparison] += test_comparison[i_comparison]
     print ("\nFULL TEST")
     print (full_comparison)
     print_test_rates(full_comparison)
+    
+    
+    
+def test_transitional_syllable_10_fold_cv():
+    print("Syllable segmentation, 10-fold crosss validation whole corpus (transitional)")
+    route = "../corpus/CGN-NL-50k-utt-syllables.txt"
+    text = load_file(route)
+    randomize = True
+    bg_separator = "-"
+    boundary = " "
 
-def test_phoneme_toy():
+    full_comparison = [0, 0, 0, 0]
+
+    divided_data = divide_data(text, randomize)
+    for i in range(len(divided_data)):
+        training_data, test_data = prepare_training_test_data(divided_data, i)
+    #    training_data, test_data = prepare_training_test_data(divided_data, 0)
+        bigram_probabilities = bigram_transitional_probabilities_from_data(training_data, bg_separator)
+        test_comparison = [0, 0, 0, 0]
+        for line in test_data:
+            line = line.strip()
+            if len(line) < 3:
+                continue
+            segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
+            gram_line = line_2_grams_w_boundaries(line, bg_separator, boundary)
+            gram_segmented_line = line_2_grams_w_boundaries(segmented_line, bg_separator, boundary)
+                    
+            line_comparison = compare_lines(gram_line, gram_segmented_line)
+            for i_comparison in range(len(line_comparison)):
+                test_comparison[i_comparison] += line_comparison[i_comparison]
+#            print(line)
+#            print(segmented_line)
+#            print(line_comparison)
+# =============================================================================
+#         print("\nTEST " + str(i+1))
+#         print(test_comparison)
+#         print_test_rates(test_comparison)
+        for i_comparison in range(len(test_comparison)):
+            full_comparison[i_comparison] += test_comparison[i_comparison]
+# =============================================================================
+    print ("\nFULL TEST")
+    print (full_comparison)
+    print_test_rates(full_comparison)
+    
+def test_transitional_syllable_sentence_10_fold_cv(threshold):
+    print("\nSyllable segmentation (w/ sentence boundaries), 10-fold crosss validation whole corpus (transitional). Threshold = " + str(threshold))
+    route = "../corpus/CGN-NL-50k-utt-syllables-sentence.txt"
+    text = load_file(route)
+    randomize = True
+    bg_separator = "-"
+    boundary = " "
+
+    full_comparison = [0, 0, 0, 0]
+
+    divided_data = divide_data(text, randomize)
+    for i in range(len(divided_data)):
+        training_data, test_data = prepare_training_test_data(divided_data, i)
+    #    training_data, test_data = prepare_training_test_data(divided_data, 0)
+        bigram_probabilities = bigram_transitional_probabilities_from_data(training_data, bg_separator)
+        test_comparison = [0, 0, 0, 0]
+        for line in test_data:
+            line = line.strip()
+            if len(line) < 3:
+                continue
+            segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator, threshold)
+            gram_line = line_2_grams_w_boundaries(line, bg_separator, boundary)
+            gram_segmented_line = line_2_grams_w_boundaries(segmented_line, bg_separator, boundary)
+                    
+            line_comparison = compare_lines(gram_line, gram_segmented_line)
+            for i_comparison in range(len(line_comparison)):
+                test_comparison[i_comparison] += line_comparison[i_comparison]
+#            print(line)
+#            print(segmented_line)
+#            print(line_comparison)
+# =============================================================================
+#         print("\nTEST " + str(i+1))
+#         print(test_comparison)
+#         print_test_rates(test_comparison)
+# =============================================================================
+        for i_comparison in range(len(test_comparison)):
+            full_comparison[i_comparison] += test_comparison[i_comparison]
+
+    print ("FULL TEST")
+    print (full_comparison)
+    print_test_rates(full_comparison)
+    
+
+
+def test_absolute_phoneme_toy():
     print("Phoneme segmentation (toy problem)")
 
     training_line = "peli roca mano roca peli mano peli"
@@ -196,7 +485,7 @@ def test_phoneme_toy():
     print(test_comparison)
     print_test_rates(test_comparison)
 
-def test_syllables_toy():
+def test_absolute_syllables_toy():
     print("Syllable segmentation (toy problem)")
 
     training_line = "pe-li ro-ca ma-no ro-ca pe-li ma-no pe-li"
@@ -225,7 +514,7 @@ def test_syllables_toy():
     print_test_rates(test_comparison)
 
 # Overfitting test
-def test_syllables_overfitting():
+def test_absolute_syllables_overfitting():
     print("Syllable segmentation: Training and testing with whole corpus")
 
     route = "../corpus/CGN-NL-50k-utt-syllables.txt"
@@ -255,6 +544,66 @@ def test_syllables_overfitting():
 #            else:
 #                is_first_word = False
 #            result_line += word
+#        print(line)
+#        print(segmented_line)
+#        print(line_comparison)
+    print(test_comparison)
+    print_test_rates(test_comparison)
+
+# Overfitting test
+def test_transitional_phoneme_overfitting():
+    print("Phoneme segmentation, training and testing with whole corpus (transitional)")
+    route = "../corpus/CGN-NL-50k-utt.txt"
+    text = load_file(route)
+    bg_separator = ""
+    bigram_probabilities = bigram_transitional_probabilities_from_data(text, bg_separator)
+    test_comparison = [0, 0, 0, 0]
+    for line in text:
+        line = line.strip()
+        if len(line) < 3:
+            continue
+        segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
+#        result_line = ""
+#        is_first_word = True
+#        for word in segmented_line:
+#            if not is_first_word:
+#                result_line += " "
+#            else:
+#                is_first_word = False
+#            result_line += word
+        line_comparison = compare_lines(line, segmented_line)
+        for i_comparison in range(len(line_comparison)):
+            test_comparison[i_comparison] += line_comparison[i_comparison]
+#        print(line)
+#        print(segmented_line)
+#        print(line_comparison)
+    print(test_comparison)
+    print_test_rates(test_comparison)
+    
+# Overfitting test
+def test_transitional_phoneme_sentence_overfitting():
+    print("Phoneme (w/sentence boundary) segmentation, training and testing with whole corpus (transitional)")
+    route = "../corpus/CGN-NL-50k-utt-sentence.txt"
+    text = load_file(route)
+    bg_separator = ""
+    bigram_probabilities = bigram_transitional_probabilities_from_data(text, bg_separator)
+    test_comparison = [0, 0, 0, 0]
+    for line in text:
+        line = line.strip()
+        if len(line) < 3:
+            continue
+        segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
+#        result_line = ""
+#        is_first_word = True
+#        for word in segmented_line:
+#            if not is_first_word:
+#                result_line += " "
+#            else:
+#                is_first_word = False
+#            result_line += word
+        line_comparison = compare_lines(line, segmented_line)
+        for i_comparison in range(len(line_comparison)):
+            test_comparison[i_comparison] += line_comparison[i_comparison]
 #        print(line)
 #        print(segmented_line)
 #        print(line_comparison)
@@ -295,7 +644,7 @@ def test_syllables2():
     bg_separator = "-"
     boundary = ' '
     
-    bigram_probabilities = syllable_probabilities_from_data(text, bg_separator)
+    bigram_probabilities = bigram_transitional_probabilities_from_data(text, bg_separator)
     test_comparison = [0, 0, 0, 0]
     for line in text:
         line = line.strip()
@@ -327,13 +676,34 @@ def test_syllables2():
 # Main Method
 
 if __name__ == "__main__":
-    #test1()
-#    test_default_bg_separator() # This functionality is potentially confusing, so I'll avoid implementing it
-    test_phoneme_toy()
-    test_phoneme_overfitting()
-    test_phoneme_10_fold_cv()
-    test_syllables_toy()
-    test_syllables_overfitting()
-    #test_syllables1()
-    test_syllables2()
-    print ("Current state: Segments with syllables (maybe more testing is needed). Hit/miss rate takes syllables as units")
+#    test1()
+#    test_absolute_default_bg_separator() # This functionality is potentially confusing, so I'll avoid implementing it
+#    test_absolute_phoneme_toy()
+#    test_absolute_phoneme_overfitting()
+#    test_transitional_phoneme_overfitting()
+#    test_transitional_phoneme_sentence_overfitting()
+    
+#    test_absolute_phoneme_10_fold_cv()
+#    test_transitional_phoneme_10_fold_cv()
+#    test_absolute_phoneme_sentence_10_fold_cv()
+    test_transitional_phoneme_sentence_10_fold_cv(0)
+#    test_transitional_phoneme_sentence_10_fold_cv(0.005)
+#    test_transitional_phoneme_sentence_10_fold_cv(0.01)
+#    test_transitional_phoneme_sentence_10_fold_cv(0.02)
+#    test_transitional_phoneme_sentence_10_fold_cv(0.05)
+    
+#    test_absolute_syllable_10_fold_cv()
+#    test_transitional_syllable_10_fold_cv()
+#    test_absolute_syllable_sentence_10_fold_cv()
+    test_transitional_syllable_sentence_10_fold_cv(0)
+    test_transitional_syllable_sentence_10_fold_cv(0.005)
+    test_transitional_syllable_sentence_10_fold_cv(0.01)
+    test_transitional_syllable_sentence_10_fold_cv(0.02)
+    test_transitional_syllable_sentence_10_fold_cv(0.05)
+    test_transitional_syllable_sentence_10_fold_cv(1)
+    
+#    test_absolute_syllables_toy()
+#    test_absolute_syllables_overfitting()
+#    #test_syllables1()
+#    test_syllables2()
+    print ("Current state: Segmentation with sentence boundaries given by Corpus. It's taking this into account in hit rate. It probably shouldn't")

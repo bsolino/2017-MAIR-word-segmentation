@@ -51,14 +51,13 @@ def line_2_bigrams(line, bg_separator):
     else:
         return [] #There are no bigrams
 
-def line_2_syllables(line, sb_separator):
-    if sb_separator != "":
-        line = line.replace(" ", sb_separator)
-        line = line.split(sb_separator)
+def line_2_syllables(line, bg_separator):
+    if bg_separator != "":
+        line = line.split(bg_separator)
         line = [item for item in line if item != ""]
         return line
     else:
-        return [] #There are no bigrams
+        return line
 
 def split_bigram(bigram, bg_separator):
     if bg_separator == "":
@@ -92,10 +91,10 @@ def calculate_absolute_probabilities(bigrams):
     return statistics
 
 # Calculates the percentage of occurrences of each bigram
-def calculate_syllable_statistics(bigrams, syllables, separator):
+def calculate_syllable_statistics(bigrams, syllables, bg_separator):
     statistics = {}
     for key, value in bigrams.items():
-        syllableCount = syllables[key.split(separator)[0]]
+        syllableCount = syllables[split_bigram(key, bg_separator)[0]]
         statistics[key] = value/syllableCount
 
     #x = []
@@ -116,7 +115,7 @@ def bigram_absolute_probabilities_from_data(data, bg_separator):
     bigram_appearances = find_bigrams(data, bg_separator)
     return calculate_absolute_probabilities(bigram_appearances)
 
-def syllable_probabilities_from_data(data, bg_separator):
+def bigram_transitional_probabilities_from_data(data, bg_separator):
     bigram_appearances = find_bigrams(data, bg_separator)
     syllables_appearances = find_syllables(data, bg_separator)
     return calculate_syllable_statistics(bigram_appearances, syllables_appearances, bg_separator)

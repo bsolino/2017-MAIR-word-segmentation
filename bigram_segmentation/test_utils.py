@@ -42,8 +42,8 @@ def compare_lines(original_line, test_line, boundary = " "):
             else:
                 true_negatives += 1
         #TODO REMOVE DEBUG
-        #match_type = " Positive" if is_sep_t else " Negative"
-        #print("'" + pair_o + "' == '" + pair_t + "' ? " + str(pair_o == pair_t) + match_type)
+#        match_type = " Positive" if is_sep_t else " Negative"
+#        print("'" + pair_o + "' == '" + pair_t + "' ? " + str(pair_o == pair_t) + match_type)
 
     
     return true_positives, true_negatives, false_positives, false_negatives
