@@ -215,7 +215,7 @@ def test_absolute_phoneme_sentence_10_fold_cv():
     
     
 def test_transitional_phoneme_10_fold_cv():
-    print("Phoneme segmentation, 10-fold crosss validation whole corpus (transitional)")
+    print("Phoneme segmentation, 10-fold cross validation whole corpus (transitional)")
     route = "../corpus/CGN-NL-50k-utt.txt"
     text = load_file(route)
     randomize = True
@@ -231,7 +231,7 @@ def test_transitional_phoneme_10_fold_cv():
         test_comparison = [0, 0, 0, 0]
         for line in test_data:
             line = line.strip()
-            if len(line) < 3:
+            if len(line) < 2:
                 continue
             segmented_line = segment_line_contiguous_probability(bigram_probabilities, clean_line(line, bg_separator), bg_separator)
             line_comparison = compare_lines(line, segmented_line)
@@ -686,24 +686,25 @@ if __name__ == "__main__":
 #    test_absolute_phoneme_10_fold_cv()
 #    test_transitional_phoneme_10_fold_cv()
 #    test_absolute_phoneme_sentence_10_fold_cv()
-    test_transitional_phoneme_sentence_10_fold_cv(0)
+#    test_transitional_phoneme_sentence_10_fold_cv(0)
 #    test_transitional_phoneme_sentence_10_fold_cv(0.005)
 #    test_transitional_phoneme_sentence_10_fold_cv(0.01)
+    test_transitional_phoneme_sentence_10_fold_cv(0.015)
 #    test_transitional_phoneme_sentence_10_fold_cv(0.02)
 #    test_transitional_phoneme_sentence_10_fold_cv(0.05)
-    test_transitional_phoneme_sentence_10_fold_cv(1)
-    test_transitional_phoneme_sentence_10_fold_cv(1.1)
+#    test_transitional_phoneme_sentence_10_fold_cv(1)
+#    test_transitional_phoneme_sentence_10_fold_cv(1.1)
     
 #    test_absolute_syllable_10_fold_cv()
 #    test_transitional_syllable_10_fold_cv()
 #    test_absolute_syllable_sentence_10_fold_cv()
-    test_transitional_syllable_sentence_10_fold_cv(0)
-    test_transitional_syllable_sentence_10_fold_cv(0.005)
-    test_transitional_syllable_sentence_10_fold_cv(0.01)
-    test_transitional_syllable_sentence_10_fold_cv(0.02)
-    test_transitional_syllable_sentence_10_fold_cv(0.05)
-    test_transitional_syllable_sentence_10_fold_cv(1)
-    test_transitional_syllable_sentence_10_fold_cv(1.1)
+#    test_transitional_syllable_sentence_10_fold_cv(0)
+#    test_transitional_syllable_sentence_10_fold_cv(0.005)
+#    test_transitional_syllable_sentence_10_fold_cv(0.01)
+#    test_transitional_syllable_sentence_10_fold_cv(0.02)
+#    test_transitional_syllable_sentence_10_fold_cv(0.05)
+#    test_transitional_syllable_sentence_10_fold_cv(1)
+#    test_transitional_syllable_sentence_10_fold_cv(1.1)
     
 #    test_absolute_syllables_toy()
 #    test_absolute_syllables_overfitting()

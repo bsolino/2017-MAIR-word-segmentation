@@ -9,7 +9,7 @@ from bigram_utils import line_2_bigrams, split_bigram
 
 # TODO Other segmentation method?
 
-def segment_line_contiguous_probability(bigrams_stats, line, separator, threshold = 0):
+def segment_line_contiguous_probability(bigrams_stats, line, separator, threshold = -1):
     bigram_line = line_2_bigrams(line, separator)
     n_bigrams = len(bigram_line)
     
@@ -36,10 +36,8 @@ def segment_line_contiguous_probability(bigrams_stats, line, separator, threshol
             
             second_part = split_bigram(current_bigram, separator)[1]
             
-            
-            
             if ((n_bigrams > 1 and prob_current < prob_previous and prob_current < prob_next)
-                    or (prob_current < threshold)):
+                    or (prob_current <= threshold)):
                 # Add separation between words
                 segmented_line += " "
                 segmented_line += second_part
