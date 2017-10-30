@@ -177,7 +177,7 @@ def test_absolute_phoneme_10_fold_cv():
     
 def test_absolute_phoneme_sentence_10_fold_cv():
     print("Phoneme segmentation (w/ sentence boundaries), 10-fold crosss validation whole corpus")
-    route = "../corpus/CGN-NL-50k-utt-sentence.txt"
+    route = "../corpus/CGN-NL-50k-utt.txt"
     text = load_file(route)
     randomize = True
     bg_separator = ""
@@ -253,7 +253,7 @@ def test_transitional_phoneme_10_fold_cv():
     
 def test_transitional_phoneme_sentence_10_fold_cv(threshold):
     print("\nPhoneme segmentation (w/ sentence boundaries), 10-fold crosss validation whole corpus (transitional). Threshold = " + str(threshold))
-    route = "../corpus/CGN-NL-50k-utt-sentence.txt"
+    route = "../corpus/CGN-NL-50k-utt.txt"
     text = load_file(route)
     randomize = True
     bg_separator = ""
@@ -332,7 +332,7 @@ def test_absolute_syllable_10_fold_cv():
     
 def test_absolute_syllable_sentence_10_fold_cv():
     print("Syllable segmentation (w/ sentence boundaries), 10-fold crosss validation whole corpus")
-    route = "../corpus/CGN-NL-50k-utt-syllables-sentence.txt"
+    route = "../corpus/CGN-NL-50k-utt-syllables.txt"
     text = load_file(route)
     randomize = True
     bg_separator = "-"
@@ -418,7 +418,7 @@ def test_transitional_syllable_10_fold_cv():
     
 def test_transitional_syllable_sentence_10_fold_cv(threshold):
     print("\nSyllable segmentation (w/ sentence boundaries), 10-fold crosss validation whole corpus (transitional). Threshold = " + str(threshold))
-    route = "../corpus/CGN-NL-50k-utt-syllables-sentence.txt"
+    route = "../corpus/CGN-NL-50k-utt-syllables.txt"
     text = load_file(route)
     randomize = True
     bg_separator = "-"
@@ -583,7 +583,7 @@ def test_transitional_phoneme_overfitting():
 # Overfitting test
 def test_transitional_phoneme_sentence_overfitting():
     print("Phoneme (w/sentence boundary) segmentation, training and testing with whole corpus (transitional)")
-    route = "../corpus/CGN-NL-50k-utt-sentence.txt"
+    route = "../corpus/CGN-NL-50k-utt.txt"
     text = load_file(route)
     bg_separator = ""
     bigram_probabilities = bigram_transitional_probabilities_from_data(text, bg_separator)
@@ -691,6 +691,8 @@ if __name__ == "__main__":
 #    test_transitional_phoneme_sentence_10_fold_cv(0.01)
 #    test_transitional_phoneme_sentence_10_fold_cv(0.02)
 #    test_transitional_phoneme_sentence_10_fold_cv(0.05)
+    test_transitional_phoneme_sentence_10_fold_cv(1)
+    test_transitional_phoneme_sentence_10_fold_cv(1.1)
     
 #    test_absolute_syllable_10_fold_cv()
 #    test_transitional_syllable_10_fold_cv()
@@ -701,9 +703,10 @@ if __name__ == "__main__":
     test_transitional_syllable_sentence_10_fold_cv(0.02)
     test_transitional_syllable_sentence_10_fold_cv(0.05)
     test_transitional_syllable_sentence_10_fold_cv(1)
+    test_transitional_syllable_sentence_10_fold_cv(1.1)
     
 #    test_absolute_syllables_toy()
 #    test_absolute_syllables_overfitting()
 #    #test_syllables1()
 #    test_syllables2()
-    print ("Current state: Segmentation with sentence boundaries given by Corpus. It's taking this into account in hit rate. It probably shouldn't")
+    print ("\nCurrent state: Segmentation with sentence boundaries hardcoded in segmentation")
