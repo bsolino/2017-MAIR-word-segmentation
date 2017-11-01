@@ -11,7 +11,7 @@ stops = ["p", "b", "t", "d", "k", "g"]
 fricatives = ["f", "v", "s", "z", "x", "G", "h", "S"]
 diphthongs = ["K", "L", "M"]
 
-illegalCombinations = ["pm", "pf", "mk", "tm", "tp", "tk"]
+illegalCombinations = ["pm", "pf", "mk", "tm", "tp", "tk", "tl", "xj"]
 
 # This function splits a word into syllables in the following way: It always splits the consonants between two vowels. The first consonant after the first vowel belongs to the first syllable, all other consonants (if any) belong to the second syllable. For example  "rusten" becomes "rus-ten" and "papapa" becomes "pap-ap-a"
 
@@ -164,9 +164,10 @@ def splitOnSyllables(input):
         splittedWord = fixSonorantConsonants(splittedWord)
         splittedWord = fixDoubleVowels(splittedWord)
         splittedWord = fixSingleConsonant(splittedWord)
+        splittedWord = removeHFromCoda(splittedWord)
 
         for letters in illegalCombinations:
-            splittedWord = fixIllegalCombinationsSyllable(splittedWord, letters[0], letters[1])
+        	splittedWord = fixIllegalCombinationsSyllable(splittedWord, letters[0], letters[1])
 
         output.append(splittedWord)
 
@@ -179,35 +180,35 @@ def prettyPrint(input):
 def createOutputFile(output):
     currentDatetime = datetime.datetime.now()
     parsedDatetime = str(currentDatetime.day) + "-" + str(currentDatetime.month) + "-" + str(currentDatetime.year) + "_" + str(currentDatetime.hour) + ":" + str(currentDatetime.minute) + ":" + str(currentDatetime.second)
-    with open("syllabification_" + ".txt", "w+") as f:
+    with open("syllabification_test" + ".txt", "w+") as f:
         for line in output:
             f.write(line + "\n")
 
 if __name__ == "__main__":
-    with open("corpus/CGN-NL-50k-utt.txt", "r+") as f:
+    with open("corpus/corpus_1st_100_lines.txt", "r+") as f:
         lines = f.readlines()
     lines = [line.strip() for line in lines]
 
-    #with open("corpus/DSWC-Syllabified-(1).txt", "r+") as f:
-    #    originalLines = f.readlines()
-    #originalLines = [line.strip() for line in originalLines]
+    with open("corpus/DSWC-Syllabified-(1).txt", "r+") as f:
+        originalLines = f.readlines()
+    originalLines = [line.strip() for line in originalLines]
 
     output = []
     for i in range(len(lines)):
         output.append(splitOnSyllables(lines[i]))
 
 
-    #(true_positives, true_negatives, false_positives, false_negatives) = (0, 0, 0, 0)
-    #for j in range(len(lines)):
-    #    result = bigram_segmentation.test_utils.compare_lines(originalLines[j], output[j], "-")
-    #    true_positives += result[0]
-    #    true_negatives += result[1]
-    #    false_positives += result[2]
-    #    false_negatives += result[3]
+    (true_positives, true_negatives, false_positives, false_negatives) = (0, 0, 0, 0)
+    for j in range(len(lines)):
+        result = bigram_segmentation.test_utils.compare_lines(originalLines[j], output[j], "-")
+        true_positives += result[0]
+        true_negatives += result[1]
+        false_positives += result[2]
+        false_negatives += result[3]
 
-    #print("TP: {0}\nTN: {1}\nFP: {2}\nFN: {3}".format(true_positives, true_negatives, false_positives, false_negatives))
-    #result = bigram_segmentation.test_utils.test_rates([true_positives, true_negatives, false_positives, false_negatives])
-    #print("True Positive Rate: {0}\nFalse Positive Rate: {1}\nTrue Negative Rate: {2}".format(result[0], result[1], result[2]))
+    print("TP: {0}\nTN: {1}\nFP: {2}\nFN: {3}".format(true_positives, true_negatives, false_positives, false_negatives))
+    result = bigram_segmentation.test_utils.test_rates([true_positives, true_negatives, false_positives, false_negatives])
+    print("True Positive Rate: {0}\nFalse Positive Rate: {1}\nTrue Negative Rate: {2}".format(result[0], result[1], result[2]))
 
     createOutputFile(output)
     #prettyPrint(output)
