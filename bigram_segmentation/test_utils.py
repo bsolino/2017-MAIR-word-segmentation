@@ -22,8 +22,8 @@ def compare_lines(original_line, test_line, boundary = " "):
         pair_o = original_line[i] + original_line[i+1]
         pair_t = test_line[j] + test_line[j+1]
         
-        is_sep_o = boundary in pair_o
-        is_sep_t = boundary in pair_t
+        is_sep_o = boundary in pair_o # is separated in the original line
+        is_sep_t = boundary in pair_t # is separated in the test line
         
         i += 1
         j += 1
@@ -41,13 +41,10 @@ def compare_lines(original_line, test_line, boundary = " "):
                 false_negatives += 1
             else:
                 true_negatives += 1
-        #TODO REMOVE DEBUG
-#        match_type = " Positive" if is_sep_t else " Negative"
-#        print("'" + pair_o + "' == '" + pair_t + "' ? " + str(pair_o == pair_t) + match_type)
 
-    
     return true_positives, true_negatives, false_positives, false_negatives
 
+# Returns the hit rate (true positive rate), false alarm rate (false positive rate), and true negative rate
 def test_rates(comparison):
     tp = comparison[0]
     tn = comparison[1]

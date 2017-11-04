@@ -20,6 +20,7 @@ def load_file(route):
 # randomize: If true the data is randomized before dividing
 # n_parts: Number of parts in which divide. If the number of parts is bigger
 #    than the number of data items the result will be divided in less parts
+# Used for 10-fold cross-validation, it shuffles the data into a random order of equal size.
 def divide_data(data, randomize = True, n_parts = 10):
     data = data.copy()
     if randomize:

@@ -197,7 +197,6 @@ if __name__ == "__main__":
     for i in range(len(lines)):
         output.append(splitOnSyllables(lines[i]))
 
-
     (true_positives, true_negatives, false_positives, false_negatives) = (0, 0, 0, 0)
     for j in range(len(lines)):
         result = bigram_segmentation.test_utils.compare_lines(originalLines[j], output[j], "-")
@@ -210,5 +209,5 @@ if __name__ == "__main__":
     result = bigram_segmentation.test_utils.test_rates([true_positives, true_negatives, false_positives, false_negatives])
     print("True Positive Rate: {0}\nFalse Positive Rate: {1}\nTrue Negative Rate: {2}".format(result[0], result[1], result[2]))
 
-    createOutputFile(output)
+    #createOutputFile(output)
     #prettyPrint(output)
