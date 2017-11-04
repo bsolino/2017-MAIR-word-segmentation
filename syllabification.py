@@ -197,8 +197,6 @@ if __name__ == "__main__":
     for i in range(len(lines)):
         output.append(splitOnSyllables(lines[i]))
 
-    print(output)
-
     (true_positives, true_negatives, false_positives, false_negatives) = (0, 0, 0, 0)
     for j in range(len(lines)):
         result = bigram_segmentation.test_utils.compare_lines(originalLines[j], output[j], "-")
