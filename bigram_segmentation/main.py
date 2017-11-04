@@ -5,7 +5,7 @@ Created on Wed Oct 18 15:06:16 2017
 @author: Breixo
 """
 from bigram_utils import find_bigrams, find_syllables, calculate_absolute_probabilities, calculate_syllable_statistics, clean_line, bigram_absolute_probabilities_from_data, bigram_transitional_probabilities_from_data
-from segmentation_utils import segment_line_contiguous_probability, segment_line_threshold, line_2_bigrams
+from segmentation_utils import segment_line_contiguous_probability, line_2_bigrams, segment_random
 from file_utils import load_file, divide_data, prepare_training_test_data
 from test_utils import compare_lines, test_rates
 
@@ -43,7 +43,6 @@ def test(route, threshold, bg_separator, boundary):
     divided_data = divide_data(text, randomize)
     for i in range(len(divided_data)):
         training_data, test_data = prepare_training_test_data(divided_data, i)
-    #    training_data, test_data = prepare_training_test_data(divided_data, 0)
         bigram_probabilities = bigram_transitional_probabilities_from_data(training_data, bg_separator)
         test_comparison = [0, 0, 0, 0]
         for line in test_data:
@@ -51,6 +50,7 @@ def test(route, threshold, bg_separator, boundary):
             bigram_line = line_2_bigrams(clean_line(line, bg_separator), bg_separator)
             if len(bigram_line) < 1:
                 continue
+            #segmented_line = segment_random(bigram_line, bg_separator, 0.5)
             segmented_line = segment_line_contiguous_probability(bigram_probabilities, bigram_line, bg_separator, threshold)
             gram_line = line_2_grams_w_boundaries(line, bg_separator, boundary)
             gram_segmented_line = line_2_grams_w_boundaries(segmented_line, bg_separator, boundary)
@@ -77,11 +77,15 @@ def test(route, threshold, bg_separator, boundary):
 # Main Method
 
 if __name__ == "__main__":
-    test("../corpus/CGN-NL-50k-utt.txt", -1, '', ' ') # Test for phonemes & neighbours
+    #test("../corpus/CGN-NL-50k-utt.txt", -1, '', ' ') # Test for phonemes & neighbours
     #test("../corpus/CGN-NL-50k-utt.txt", 0.005, '', ' ')  # Test for phonemes & neighbours + threshold
     #test("../corpus/CGN-NL-50k-utt.txt", 0.01, '', ' ')  # Test for phonemes & neighbours + threshold
     #test("../corpus/CGN-NL-50k-utt.txt", 0.012, '', ' ')  # Test for phonemes & neighbours + threshold
     #test("../corpus/CGN-NL-50k-utt.txt", 0.015, '', ' ')  # Test for phonemes & neighbours + threshold
     #test("../corpus/syllabification_30-10.txt", -1, '-', ' ') # Test for syllables & neighbours
+    #test("../corpus/syllabification_30-10.txt", 0.005, '-', ' ')  # Test for syllables & neighbours + threshold
+    #test("../corpus/syllabification_30-10.txt", 0.01, '-', ' ')  # Test for syllables & neighbours + threshold
+    #test("../corpus/syllabification_30-10.txt", 0.012, '-', ' ')  # Test for syllables & neighbours + threshold
+    test("../corpus/syllabification_30-10.txt", 0.015, '-', ' ')  # Test for syllables & neighbours + threshold
 
     print ("\nCurrent state: Segmentation with sentence boundaries hardcoded in segmentation")
