@@ -185,7 +185,7 @@ def createOutputFile(output):
             f.write(line + "\n")
 
 if __name__ == "__main__":
-    with open("corpus/corpus_1st_100_lines.txt", "r+") as f:
+    with open("corpus/corpus_1st_96_lines.txt", "r+") as f:
         lines = f.readlines()
     lines = [line.strip() for line in lines]
 
